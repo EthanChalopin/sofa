@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canapé convertible OPP — modèle coté</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="stage" id="stage" aria-label="Modèle 3D du canapé">
+      <header class="stage-title">
+        <h1>Canapé convertible</h1>
+        <p>D’après OPP Dřevovýroba, années 1970 · version à deux inclinaisons</p>
+      </header>
+
+      <p class="hint">Glisser : tourner · Molette : zoomer · Clic droit : déplacer</p>
+
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Position">
+          <button type="button" data-pos="sofa" aria-pressed="true">Canapé</button>
+          <button type="button" data-pos="lounge" aria-pressed="false">Détente</button>
+          <button type="button" data-pos="bed" aria-pressed="false">Lit</button>
+        </div>
+        <div class="seg" role="group" aria-label="Vue">
+          <button type="button" data-view="iso">3/4</button>
+          <button type="button" data-view="front">Face</button>
+          <button type="button" data-view="side">Profil</button>
+          <button type="button" data-view="top">Dessus</button>
+          <button type="button" data-view="mech">Mécanisme</button>
+        </div>
+        <div class="seg">
+          <button type="button" id="dims-toggle" aria-pressed="true">Cotes</button>
+        </div>
+      </div>
+
+      <div class="labels" id="labels" aria-hidden="true"></div>
+      <div class="tooltip" id="tooltip" hidden></div>
+    </section>
+
+    <aside class="panel">
+      <div id="detail" aria-live="polite"></div>
+
+      <section>
+        <h3>Pièces</h3>
+        <ul class="parts" id="parts"></ul>
+      </section>
+
+      <section>
+        <h3>Fiabilité des cotes</h3>
+        <ul class="legend" id="legend"></ul>
+      </section>
+
+      <details class="photos">
+        <summary>Photos de référence</summary>
+        <div class="thumbs" id="photos"></div>
+      </details>
+
+      <footer>
+        Source :
+        <a href="https://justchairs.eu/products/mid-century-convertible-sofa-by-opp-drevovyroba-1970s" target="_blank" rel="noopener">annonce justchairs.eu</a>
+        (réf. JC265021). Cotes en centimètres.
+      </footer>
+    </aside>
+  </main>
+
+  <dialog class="lightbox" id="lightbox"><img alt="Photo de référence"></dialog>
+
+  <noscript><p class="fatal">Cette page a besoin de JavaScript pour afficher le modèle.</p></noscript>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <script src="js/sofa-model.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
