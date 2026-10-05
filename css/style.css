@@ -388,3 +388,53 @@ a { color: var(--accent); }
     border-top: 1px solid var(--line);
   }
 }
+
+/* ---------------------------------------------------------------- achats et débit */
+
+.width-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.width-form label {
+  flex: 1 1 100%;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.width-form input, .width-form button {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font: inherit;
+}
+
+.width-form input {
+  width: 92px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.width-form button {
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+
+#bom h4 {
+  margin: 18px 0 2px;
+  font-size: 14px;
+}
+
+.cuts {
+  margin: 4px 0 8px;
+  padding-left: 22px;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dims tr.total td { font-weight: 600; border-bottom: 0; }
+.dims tr.over td:last-child, .note.warn { color: #c0392b; }

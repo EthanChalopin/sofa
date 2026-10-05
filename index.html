@@ -11,7 +11,7 @@
     <section class="stage" id="stage" aria-label="Modèle 3D du canapé">
       <header class="stage-title">
         <h1>Canapé convertible</h1>
-        <p>D’après OPP Dřevovýroba, années 1970 · version à deux inclinaisons</p>
+        <p>D’après OPP Dřevovýroba, années 1970 · version en deux blocs, à deux inclinaisons</p>
       </header>
 
       <p class="hint">Glisser : tourner · Molette : zoomer · Clic droit : déplacer</p>
@@ -29,6 +29,12 @@
           <button type="button" data-view="top">Dessus</button>
           <button type="button" data-view="mech">Mécanisme</button>
         </div>
+        <div class="seg" role="group" aria-label="Rendu">
+          <button type="button" data-look="structure" aria-pressed="false">Structure</button>
+          <button type="button" data-look="mdf" aria-pressed="false">MDF</button>
+          <button type="button" data-look="foam" aria-pressed="false">Mousse</button>
+          <button type="button" data-look="covered" aria-pressed="true">Habillé</button>
+        </div>
         <div class="seg">
           <button type="button" id="dims-toggle" aria-pressed="true">Cotes</button>
         </div>
@@ -45,6 +51,11 @@
         <h3>Pièces</h3>
         <ul class="parts" id="parts"></ul>
       </section>
+
+      <details class="photos">
+        <summary>Achats, débit et solidité</summary>
+        <div id="bom"></div>
+      </details>
 
       <section>
         <h3>Fiabilité des cotes</h3>
@@ -71,6 +82,7 @@
   <script src="vendor/three.min.js"></script>
   <script src="vendor/OrbitControls.js"></script>
   <script src="js/sofa-model.js"></script>
+  <script src="js/sofa-bom.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

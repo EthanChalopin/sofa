@@ -5,12 +5,16 @@
 (function () {
   'use strict';
 
+  // La longueur du canapé peut être donnée dans l'adresse (?largeur=180) : elle remplace celle du modèle.
+  var askedWidth = Number((location.search.match(/[?&]largeur=([\d.]+)/) || [])[1]);
+  if (askedWidth >= 120 && askedWidth <= 300) SofaModel.MOD.width = askedWidth;
+
   var model = SofaModel.build();
   var parts = model.parts;
   var byId = {};
   parts.forEach(function (p) { byId[p.id] = p; });
 
-  var COLORS = { honey: '#d48a32', mahogany: '#7a3217', padwood: '#b4541f', fabric: '#4e9463', deck: '#c9a66b', metal: '#a9abae' };
+  var COLORS = { honey: '#d48a32', mahogany: '#7a3217', padwood: '#b4541f', fabric: '#4e9463', deck: '#c9a66b', metal: '#a9abae', foam: '#ead9a0' };
   var SOURCES = {
     v: 'Cote donnée par le vendeur',
     p: 'Estimée d’après les photos (± 1 à 2 cm)',
@@ -18,10 +22,12 @@
     m: 'Modification personnelle — cote de conception'
   };
   var POS_NAMES = { sofa: 'canape', lounge: 'detente', bed: 'lit' };
+  var LOOK_NAMES = { covered: 'habille', foam: 'mousse', mdf: 'mdf', structure: 'structure' };
+  var LAYERS = ['structure', 'mdf', 'foam', 'cover'];      // ordre de pose ; le rendu « covered » montre la dernière
   var VIEW_NAMES = { iso: '3-4', front: 'face', side: 'profil', top: 'dessus', mech: 'mecanisme' };
   var PHOTO_COUNT = 16;
 
-  var state = { part: null, pos: 'sofa', dims: true };
+  var state = { part: null, pos: 'sofa', dims: true, look: 'covered' };
   var view3d = null;
 
   function $(id) { return document.getElementById(id); }
@@ -73,17 +79,19 @@
         text: 'Lit : le dossier bascule d’environ ' + model.flipDeg + '° vers l’avant autour de deux boulons, passe au-dessus ' +
               'de l’assise et se pose à plat devant elle. Les accoudoirs se retrouvent à la verticale et deviennent les pieds du lit.'
       }));
-      root.appendChild(el('p', { class: 'meta', text: 'Version modifiée : position détente, banquette fixe' }));
+      root.appendChild(el('p', { class: 'meta', text: 'Version modifiée : deux blocs de mousse garnis, position détente, banquette fixe' }));
       root.appendChild(dimsTable(model.custom));
       root.appendChild(el('p', {
         class: 'note',
-        text: 'S’incliner : se pencher en avant pour soulager le dossier, lever le manche d’un taquet (les deux tournent ' +
-              'ensemble), se laisser aller en arrière, lâcher. Se redresser : ramener le dossier vers l’avant, un peu ' +
+        text: 'S’incliner : se pencher en avant pour soulager le dossier, lever l’un des deux leviers, sur le côté de ' +
+              'l’assise, se laisser aller en arrière, lâcher. Se redresser : ramener le dossier vers l’avant, un peu ' +
               'au-delà de la position droite ; les taquets se relèvent seuls, on repose le dossier dessus.'
       }));
       root.appendChild(el('p', {
         class: 'note subtle',
-        text: 'Pour suivre le mouvement des taquets : vue « Mécanisme », puis alterner Canapé et Détente.'
+        text: 'Quatre rendus, dans l’ordre de fabrication : « Structure » (tasseaux, panneaux, mécanisme), « MDF », ' +
+              '« Mousse », puis « Habillé » (ouate et tissu). Vue « Mécanisme » : alterner Canapé et Détente pour ' +
+              'suivre les taquets.'
       }));
       root.appendChild(el('p', { class: 'note subtle', text: 'Cliquez sur une pièce du modèle ou de la liste pour afficher ses cotes.' }));
       return;
@@ -137,6 +145,57 @@
     box.addEventListener('click', function () { box.close(); });
   }
 
+  // Achats, plan de coupe et solidité, recalculés à partir du modèle (sofa-bom.js).
+  function renderBom() {
+    var root = $('bom');
+    if (!root || !window.SofaBom) return;
+    var plan = SofaBom.plan(model);
+    function euro(v) { return v.toFixed(2).replace('.', ',') + ' €'; }
+    function table(rows) { return el('table', { class: 'dims' }, [el('tbody', {}, rows)]); }
+
+    var input = el('input', { type: 'number', id: 'width-input', min: '120', max: '300', step: '1', value: String(model.width) });
+    var form = el('form', { class: 'width-form' }, [
+      el('label', { for: 'width-input', text: 'Longueur du canapé (les deux blocs), en cm' }),
+      input, el('button', { type: 'submit', text: 'Recalculer' })
+    ]);
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var v = Number(input.value);
+      if (v >= 120 && v <= 300) location.search = '?largeur=' + v;      // recharge la page avec la nouvelle longueur
+    });
+    root.appendChild(form);
+
+    root.appendChild(el('h4', { text: 'À acheter' }));
+    root.appendChild(table(plan.lines.map(function (l) {
+      return el('tr', {}, [el('td', { text: l.qty + ' × ' + l.name + (l.estimate ? ' (estimation)' : '') }), el('td', { text: euro(l.total) })]);
+    }).concat([el('tr', { class: 'total' }, [el('td', { text: 'Total' }), el('td', { text: euro(plan.total) })])])));
+
+    root.appendChild(el('h4', { text: 'Plan de coupe' }));
+    plan.cutting.forEach(function (c) {
+      var rows = (c.bars || []).map(function (bar) {
+        return bar.pieces.map(function (p) { return fmt(p.length); }).join(' + ') + ' → chute ' + fmt(bar.left) + ' cm';
+      });
+      (c.panels || []).forEach(function (panel) {
+        panel.strips.forEach(function (strip) {
+          rows.push(strip.pieces.map(function (p) { return fmt(p.length) + ' × ' + fmt(p.width); }).join(' + '));
+        });
+      });
+      root.appendChild(el('p', { class: 'meta', text: c.name }));
+      root.appendChild(el('ol', { class: 'cuts' }, rows.map(function (r) { return el('li', { text: r }); })));
+    });
+
+    root.appendChild(el('h4', { text: 'Pièces à couper' }));
+    root.appendChild(table(SofaBom.pieces(model).filter(function (p) { return p.length; }).map(function (p) {
+      return el('tr', {}, [el('td', { text: p.qty + ' × ' + p.part }), el('td', { text: fmt(p.length) + (p.width ? ' × ' + fmt(p.width) : '') + ' cm' })]);
+    })));
+
+    root.appendChild(el('h4', { text: 'Solidité (100 % = limite admise)' }));
+    root.appendChild(table(SofaBom.audit(model).map(function (r) {
+      return el('tr', { class: r.pct > 100 ? 'over' : '', title: r.note }, [el('td', { text: r.name }), el('td', { text: r.pct + ' %' })]);
+    })));
+    plan.warnings.forEach(function (w) { root.appendChild(el('p', { class: 'note warn', text: w })); });
+  }
+
   // ---------------------------------------------------------------- état
 
   function select(id, mesh) {
@@ -158,6 +217,15 @@
     writeHash();
   }
 
+  function setLook(look) {
+    state.look = look;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-look]'), function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-look') === look));
+    });
+    if (view3d) view3d.repaint();
+    writeHash();
+  }
+
   function setDims(on) {
     state.dims = on;
     $('dims-toggle').setAttribute('aria-pressed', String(on));
@@ -176,6 +244,7 @@
   function writeHash() {
     var bits = [];
     if (state.pos !== 'sofa') bits.push('position=' + POS_NAMES[state.pos]);
+    if (state.look !== 'covered') bits.push('rendu=' + LOOK_NAMES[state.look]);
     if (state.part) bits.push('piece=' + state.part);
     try {
       history.replaceState(null, '', bits.length ? '#' + bits.join('&') : location.pathname + location.search);
@@ -292,7 +361,7 @@
       for (var i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i), uv.getX(i));
     }
 
-    function buildShape(s) {
+    function buildShape(s, fabric) {
       var out = { position: new THREE.Vector3(), rotX: s.rotX || 0 };
       if (s.type === 'box') {
         out.geometry = s.radius ? roundedBox(s.size, s.radius) : new THREE.BoxGeometry(s.size[0], s.size[1], s.size[2]);
@@ -304,7 +373,7 @@
         out.geometry = new THREE.ExtrudeGeometry(shape, {
           depth: s.x1 - s.x0 - 2 * r, bevelEnabled: r > 0, bevelThickness: r, bevelSize: r, bevelOffset: -r, bevelSegments: 4
         });
-        if (r) swapUV(out.geometry);                      // rayures du tissu dans le sens de la longueur
+        if (fabric) swapUV(out.geometry);                 // rayures du tissu dans le sens de la longueur
         out.geometry.rotateY(-Math.PI / 2);
         out.geometry.translate(s.x1 - r, 0, 0);
       } else if (s.type === 'frustum') {
@@ -334,13 +403,13 @@
     var meshes = [];
     parts.forEach(function (part) {
       part.shapes.forEach(function (shape) {
-        var built = buildShape(shape);
+        var built = buildShape(shape, part.color === 'fabric');
         var mesh = new THREE.Mesh(built.geometry, materialFor(part.color));
         mesh.position.copy(built.position);
         mesh.rotation.x = built.rotX;
         mesh.castShadow = mesh.receiveShadow = true;
         mesh.userData.part = part;
-        if (part.color !== 'fabric' && part.color !== 'metal') {
+        if (part.color !== 'fabric' && part.color !== 'metal' && part.color !== 'foam') {
           var lines = new THREE.LineSegments(new THREE.EdgesGeometry(built.geometry, 25), edgeMaterial);
           lines.raycast = noRaycast;
           mesh.add(lines);
@@ -429,9 +498,19 @@
       dirty = true;
     }
 
+    // Cotes de la pièce examinée. Une pièce unique dessinée en plusieurs volumes est cotée d'un bloc.
+    function showFocusBox() {
+      var part = focus.userData.part;
+      var volumes = meshes.filter(function (m) { return m.userData.part === part; });
+      if (part.qty !== 1 || volumes.length === 1) return showDimBox(focus, focus.geometry.boundingBox);
+      var whole = new THREE.Box3();
+      volumes.forEach(function (m) { whole.union(m.geometry.boundingBox.clone().translate(m.position)); });
+      showDimBox(focus.parent, whole);
+    }
+
     function refreshDims() {
       if (!state.dims) showDimBox(null, null);
-      else if (focus) showDimBox(focus, focus.geometry.boundingBox);
+      else if (focus) showFocusBox();
       else if (stageNow === stageTarget && currentView !== 'mech') showDimBox(scene, overallBox());
       else showDimBox(null, null);
     }
@@ -486,9 +565,18 @@
     var hovered = null;
 
     // La pièce sélectionnée reste pleine, les autres s'estompent : on la voit même cachée sous les coussins.
+    // Quatre rendus, par couches : chacun montre les pièces posées jusque-là. Sous le garnissage, tout ce
+    // qu'il enferme est masqué. La pièce qu'on examine reste toujours visible.
+    function shown(part) {
+      var rank = LAYERS.indexOf(part.layer || 'structure');
+      if (state.look === 'covered') return !part.core && (rank === 0 || rank === LAYERS.length - 1);
+      return rank <= LAYERS.indexOf(state.look);
+    }
+
     function paint() {
       meshes.forEach(function (m) {
-        var id = m.userData.part.id, mat = m.material;
+        var part = m.userData.part, id = part.id, mat = m.material;
+        m.visible = id === state.part || shown(part);
         var ghost = !!state.part && id !== state.part;
         if (mat.transparent !== ghost) {
           mat.transparent = ghost;
@@ -598,7 +686,7 @@
       var r = canvas.getBoundingClientRect();
       ndc.set((ev.clientX - r.left) / r.width * 2 - 1, 1 - (ev.clientY - r.top) / r.height * 2);
       raycaster.setFromCamera(ndc, camera);
-      var hit = raycaster.intersectObjects(meshes, false)[0];
+      var hit = raycaster.intersectObjects(meshes.filter(function (m) { return m.visible; }), false)[0];
       return hit ? hit.object : null;
     }
 
@@ -667,7 +755,8 @@
         refreshDims();
       },
       setView: function (name, animate) { setView(name, animate && !reduceMotion.matches); },
-      refreshDims: refreshDims
+      refreshDims: refreshDims,
+      repaint: paint
     };
   }
 
@@ -675,6 +764,7 @@
 
   renderParts();
   renderPhotos();
+  renderBom();
 
   try {
     if (!window.THREE) throw new Error('three.js introuvable (dossier vendor/)');
@@ -691,7 +781,12 @@
     b.addEventListener('click', function () { setPos(b.getAttribute('data-pos'), true); });
   });
   Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (b) {
-    b.addEventListener('click', function () { if (view3d) view3d.setView(b.getAttribute('data-view'), true); });
+    b.addEventListener('click', function () {
+      if (view3d) view3d.setView(b.getAttribute('data-view'), true);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-look]'), function (b) {
+    b.addEventListener('click', function () { setLook(b.getAttribute('data-look')); });
   });
   $('dims-toggle').addEventListener('click', function () { setDims(!state.dims); });
   document.addEventListener('keydown', function (ev) {
@@ -701,6 +796,7 @@
   // État donné par l'adresse : #position=lit&piece=upright&vue=profil
   function applyHash(animate) {
     var hash = readHash();
+    setLook(keyOf(LOOK_NAMES, hash.rendu) || 'covered');
     setPos(keyOf(POS_NAMES, hash.position) || 'sofa', animate);
     if (view3d && (hash.vue || !animate)) view3d.setView(keyOf(VIEW_NAMES, hash.vue) || 'iso', animate);
     select(hash.piece || null);
