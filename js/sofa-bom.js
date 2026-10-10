@@ -24,6 +24,13 @@
   // Petites fournitures, chiffrées en bloc.
   var EXTRAS = [{ name: 'Pointes crantées, vis, colliers, chute de hêtre, tourillon ø 12', price: 35, estimate: true }];
   var KERF = 0.4;                                         // trait de scie perdu à chaque coupe
+  // Mousse et ouate : pas encore choisies. Un champ laissé à null apparaît « à remplir » dans MATERIAUX.md.
+  // « quality » : densité et fermeté pour une mousse, grammage pour la ouate. « price » : prix total de la ligne, en euros.
+  var SOFT = {
+    seatFoam: { supplier: null, reference: null, quality: null, price: null },
+    backFoam: { supplier: null, reference: null, quality: null, price: null },
+    wadding: { supplier: null, reference: null, quality: null, price: null }
+  };
 
   function round1(v) { return Math.round(v * 10) / 10; }
   function fr(v) { return String(round1(v)).replace('.', ','); }
@@ -186,7 +193,7 @@
     };
   }
 
-  var api = { fabricNeed: fabricNeed, CATALOG: CATALOG, EXTRAS: EXTRAS, KERF: KERF, pieces: pieces, plan: plan, audit: audit };
+  var api = { fabricNeed: fabricNeed, CATALOG: CATALOG, EXTRAS: EXTRAS, SOFT: SOFT, KERF: KERF, pieces: pieces, plan: plan, audit: audit };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SofaBom = api;
 })(typeof self !== 'undefined' ? self : this);
