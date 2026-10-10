@@ -147,7 +147,46 @@
     return rows;
   }
 
-  var api = { CATALOG: CATALOG, EXTRAS: EXTRAS, KERF: KERF, pieces: pieces, plan: plan, audit: audit };
+  // Tissu à acheter. Les rayures et les motifs courent d'avant en arrière sur l'assise et montent sur le
+  // dossier. En général la longueur du rouleau suit donc ce sens, et chaque bloc est habillé de plusieurs
+  // largeurs de tissu (des « lés ») cousues côte à côte.
+  var SEAM = 1.5, TUCK = 5, SPARE = 0.10;                 // couture ; retour agrafé sous le cadre ; marge de coupe
+  function fabricNeed(model, fabric) {
+    var seat = model.cover.seat, back = model.cover.back;
+    var girth = 2 * (back.height + back.thick);           // tour du dossier, garni sur ses deux faces
+    var area = (seat.length * seat.depth + 2 * seat.drop * (seat.length + seat.depth) +
+                back.length * girth + 2 * back.height * back.thick) / 1e4;
+    var across = seat.length + 2 * SEAM;                  // longueur du canapé, coutures comprises
+    var seatBand = seat.depth + 2 * seat.drop + 2 * TUCK, backBand = girth + TUCK + 2 * SEAM;
+    var flank = seat.drop + TUCK + SEAM, lays, metres, spare;
+    // Rayures en travers du rouleau : si chaque bande tient dans la largeur, le tissu est tourné d'un quart de
+    // tour. Les bandes se coupent alors dans la largeur, et la longueur du canapé dans celle du rouleau, sans
+    // couture. Sinon le tissu se pose comme les autres, et ses rayures courent dans la longueur du canapé.
+    var turned = !!fabric.weft && seatBand <= fabric.width && backBand <= fabric.width;
+    if (turned) {
+      lays = 1;
+      var together = seatBand + backBand <= fabric.width;
+      metres = (together ? 1 : 2) * across;
+      spare = together ? fabric.width - seatBand - backBand : 0;
+      // Les flancs de l'assise se prennent dans la chute si elle est assez large, sinon dans une longueur de plus.
+      if (spare < flank) metres += (2 * (seat.depth + 2 * SEAM) <= fabric.width ? 1 : 2) * flank;
+    } else {
+      lays = Math.ceil(across / fabric.width);
+      // Avec un motif, chaque lé repart du même point du dessin : sa longueur est arrondie au raccord.
+      var strip = function (length) { return fabric.repeat ? Math.ceil(length / fabric.repeat) * fabric.repeat : length; };
+      metres = lays * (strip(seatBand) + strip(backBand));
+      // Les flancs de l'assise et les bouts du dossier se prennent dans la chute du dernier lé, si elle est assez large.
+      spare = lays * fabric.width - across;
+      if (spare < flank) metres += 2 * flank + back.thick + 2 * SEAM;
+    }
+    metres = Math.ceil(metres * (1 + SPARE) / 10) / 10;   // en mètres, arrondi aux 10 cm supérieurs
+    return {
+      area: area, lays: lays, turned: turned, along: !!fabric.weft && !turned, metres: metres, bought: metres * fabric.width / 100,
+      price: fabric.price ? metres * fabric.price : null
+    };
+  }
+
+  var api = { fabricNeed: fabricNeed, CATALOG: CATALOG, EXTRAS: EXTRAS, KERF: KERF, pieces: pieces, plan: plan, audit: audit };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SofaBom = api;
 })(typeof self !== 'undefined' ? self : this);

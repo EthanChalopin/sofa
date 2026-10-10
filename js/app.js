@@ -27,7 +27,7 @@
   var VIEW_NAMES = { iso: '3-4', front: 'face', side: 'profil', top: 'dessus', mech: 'mecanisme' };
   var PHOTO_COUNT = 16;
 
-  var state = { part: null, pos: 'sofa', dims: true, look: 'covered' };
+  var state = { part: null, pos: 'sofa', dims: true, look: 'covered', fabric: SofaFabrics.list[0].id };
   var view3d = null;
 
   function $(id) { return document.getElementById(id); }
@@ -46,6 +46,68 @@
   function fmt(v) { return String(Math.round(v * 10) / 10).replace('.', ','); }
   function cm(v) { return typeof v === 'number' ? fmt(v) + ' cm' : v; }
   function keyOf(map, value) { return Object.keys(map).filter(function (k) { return map[k] === value; })[0]; }
+
+  // ---------------------------------------------------------------- tissus
+
+  // Motif répétable d'un tissu : une image (dessinée ici, ou photo embarquée) et la taille en cm qu'elle couvre.
+  var patterns = {};
+  function fabricPattern(fabric) {
+    if (patterns[fabric.id]) return patterns[fabric.id];
+    var photo = fabric.image && window.SofaFabricImages && SofaFabricImages[fabric.id];
+    if (photo) return (patterns[fabric.id] = { url: photo, tile: fabric.tile });
+
+    var c = document.createElement('canvas'), g = c.getContext('2d'), tile = fabric.tile || [1, 1];
+    if (fabric.stripes) {
+      // Rayures : des bandes [couleur, largeur en cm] côte à côte, sur toute la largeur du motif.
+      var total = fabric.stripes.reduce(function (sum, st) { return sum + st[1]; }, 0), at = 0;
+      // Elles courent d'avant en arrière, sauf celles d'un tissu rayé en travers et trop étroit pour être tourné.
+      var along = !!window.SofaBom && SofaBom.fabricNeed(model, fabric).along;
+      c.width = along ? 8 : 512;
+      c.height = along ? 512 : 8;
+      fabric.stripes.forEach(function (st) {
+        g.fillStyle = st[0];
+        if (along) g.fillRect(0, Math.round(at / total * 512), 8, Math.ceil(st[1] / total * 512) + 1);
+        else g.fillRect(Math.round(at / total * 512), 0, Math.ceil(st[1] / total * 512) + 1, 8);
+        at += st[1];
+      });
+      tile = along ? [1, total] : [total, 1];
+    } else {
+      c.width = c.height = fabric.size || 64;
+      if (fabric.paint) {
+        fabric.paint(g, c.width);
+      } else {                                            // photo absente : un aplat de la couleur du tissu
+        g.fillStyle = fabric.swatch;
+        g.fillRect(0, 0, c.width, c.height);
+      }
+    }
+    return (patterns[fabric.id] = { canvas: c, url: c.toDataURL(), tile: tile });
+  }
+
+  // Vignette : un carré du tissu, assez grand pour montrer au moins un motif. Un motif trop fin pour se
+  // distinguer (velours côtelé) est remplacé par la couleur d'ensemble.
+  function chipStyle(fabric, px) {
+    var p = fabricPattern(fabric), major = Math.max(p.tile[0], p.tile[1]), shown = Math.max(10, Math.min(45, 1.2 * major));
+    if (major / shown * px < 3) return 'background:' + fabric.swatch;
+    return 'background:' + fabric.swatch + ' url(' + p.url + ') 0 0 / ' +
+           (100 * p.tile[0] / shown).toFixed(1) + '% ' + (100 * p.tile[1] / shown).toFixed(1) + '%';
+  }
+
+  function renderFabricMenu() {
+    var menu = $('fabric-menu'), list = $('fabric-list');
+    SofaFabrics.list.forEach(function (f) {
+      var button = el('button', { type: 'button', role: 'radio', 'aria-checked': 'false', 'data-fabric': f.id }, [
+        el('span', { class: 'chip', style: chipStyle(f, 36) }), el('span', { text: f.name })
+      ]);
+      button.addEventListener('click', function () {
+        setFabric(f.id);
+        menu.open = false;
+      });
+      list.appendChild(button);
+    });
+    document.addEventListener('pointerdown', function (ev) {          // un clic ailleurs referme la liste
+      if (menu.open && !menu.contains(ev.target)) menu.open = false;
+    });
+  }
 
   // ---------------------------------------------------------------- panneau latéral
 
@@ -93,6 +155,29 @@
               '« Mousse », puis « Habillé » (ouate et tissu). Vue « Mécanisme » : alterner Canapé et Détente pour ' +
               'suivre les taquets.'
       }));
+      var fabric = SofaFabrics.byId(state.fabric);
+      root.appendChild(el('p', { class: 'meta', text: 'Tissu : ' + fabric.name }));
+      root.appendChild(el('p', { class: 'note' }, [document.createTextNode(fabric.note + ' ')].concat(
+        fabric.url ? [el('a', { href: fabric.url, target: '_blank', rel: 'noopener', text: 'Voir la référence' })] : [])));
+      if (window.SofaBom) {
+        var need = SofaBom.fabricNeed(model, fabric);
+        root.appendChild(dimsTable([
+          ['Surface à couvrir', fmt(need.area) + ' m²', 'm'],
+          ['Tissu à acheter', fmt(need.metres) + ' m en ' + fabric.width + ' cm de large', 'm'],
+          ['Soit', fmt(need.bought) + ' m²', 'm']
+        ].concat(need.price ? [['Prix du tissu', need.price.toFixed(2).replace('.', ',') + ' €', 'm']] : [])));
+        root.appendChild(el('p', {
+          class: 'note subtle',
+          text: (need.turned
+            ? 'Rayures en travers du rouleau : le tissu se pose tourné d’un quart de tour, ' +
+              (need.lays === 1 ? 'chaque bloc d’une seule pièce, sans couture' : 'en ' + need.lays + ' pièces par bloc')
+            : (need.along ? 'Rayures en travers du rouleau : elles courent dans la longueur du canapé. ' : '') +
+              'Tissu posé d’avant en arrière, en ' + (need.lays === 1 ? 'une seule largeur par bloc, sans couture'
+                                                                    : need.lays + ' largeurs cousues côte à côte par bloc')) +
+            (need.lays === 1 ? ' ; retours sous le cadre' : ' ; coutures, retours sous le cadre') +
+            (fabric.repeat ? ', raccord du motif' : '') + ' et 10 % de marge compris.'
+        }));
+      }
       root.appendChild(el('p', { class: 'note subtle', text: 'Cliquez sur une pièce du modèle ou de la liste pour afficher ses cotes.' }));
       return;
     }
@@ -111,7 +196,7 @@
     parts.forEach(function (part) {
       var summary = part.size ? part.size.map(fmt).join(' × ') + ' cm' : '';
       var button = el('button', { type: 'button', 'data-part': part.id }, [
-        el('span', { class: 'swatch', style: 'background:' + COLORS[part.color] }),
+        el('span', { class: 'swatch', 'data-color': part.color, style: 'background:' + COLORS[part.color] }),
         el('span', { text: part.name + (part.qty > 1 ? ' × ' + part.qty : '') }),
         el('small', { text: summary })
       ]);
@@ -226,6 +311,22 @@
     writeHash();
   }
 
+  function setFabric(id) {
+    var fabric = SofaFabrics.byId(id);
+    state.fabric = fabric.id;
+    $('fabric-name').textContent = fabric.name;
+    $('fabric-chip').setAttribute('style', chipStyle(fabric, 28));
+    Array.prototype.forEach.call($('fabric-list').querySelectorAll('button'), function (b) {
+      b.setAttribute('aria-checked', String(b.getAttribute('data-fabric') === fabric.id));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.swatch[data-color="fabric"]'), function (n) {
+      n.style.background = fabric.swatch;
+    });
+    if (view3d) view3d.setFabric();
+    if (!state.part) renderDetail();
+    writeHash();
+  }
+
   function setDims(on) {
     state.dims = on;
     $('dims-toggle').setAttribute('aria-pressed', String(on));
@@ -245,6 +346,7 @@
     var bits = [];
     if (state.pos !== 'sofa') bits.push('position=' + POS_NAMES[state.pos]);
     if (state.look !== 'covered') bits.push('rendu=' + LOOK_NAMES[state.look]);
+    if (state.fabric !== SofaFabrics.list[0].id) bits.push('tissu=' + state.fabric);
     if (state.part) bits.push('piece=' + state.part);
     try {
       history.replaceState(null, '', bits.length ? '#' + bits.join('&') : location.pathname + location.search);
@@ -298,31 +400,40 @@
 
     // --- matières ---
 
-    function fabricTexture() {
-      var c = document.createElement('canvas');
-      c.width = c.height = 64;
-      var g = c.getContext('2d');
-      g.fillStyle = '#58a26e';
-      g.fillRect(0, 0, 64, 64);
-      g.fillStyle = '#3b7551';
-      for (var y = 0; y < 64; y += 16) g.fillRect(0, y, 64, 7);
-      g.fillStyle = '#58a26e';
-      for (y = 0; y < 64; y += 16) for (var x = 0; x < 64; x += 8) g.fillRect(x, y + 2, 3, 3);
-      var t = new THREE.CanvasTexture(c);
+    // Tissus : une texture répétée par motif, à l'échelle (1 unité de texture = 1 cm).
+    var fabricMaps = {}, fabricMaterials = [];
+
+    function fabricTexture(fabric) {
+      if (fabricMaps[fabric.id]) return fabricMaps[fabric.id];
+      var pattern = fabricPattern(fabric), t;
+      if (pattern.canvas) {
+        t = new THREE.CanvasTexture(pattern.canvas);
+      } else {
+        // Photo embarquée : la texture apparaît dès que le navigateur l'a décodée.
+        var img = new Image();
+        t = new THREE.Texture(img);
+        img.onload = function () { t.needsUpdate = true; dirty = true; };
+        img.src = pattern.url;
+      }
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      t.repeat.set(1 / 4, 1 / 4);                         // un motif tous les 4 cm, soit une rayure par cm
+      t.repeat.set(1 / pattern.tile[0], 1 / pattern.tile[1]);
       t.encoding = THREE.sRGBEncoding;
       t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      return t;
+      return (fabricMaps[fabric.id] = t);
     }
 
-    var fabricMap = fabricTexture();
+    function applyFabric() {
+      var map = fabricTexture(SofaFabrics.byId(state.fabric));
+      fabricMaterials.forEach(function (m) { m.map = map; });
+      dirty = true;
+    }
+
     var edgeMaterial = new THREE.LineBasicMaterial({ color: 0x2e1c0e, transparent: true, opacity: 0.32 });
     var ghostEdgeMaterial = new THREE.LineBasicMaterial({ color: 0x2e1c0e, transparent: true, opacity: 0.1 });
 
     function materialFor(key) {
       var m = new THREE.MeshStandardMaterial({ roughness: 0.78, emissive: 0xffffff, emissiveIntensity: 0 });
-      if (key === 'fabric') { m.map = fabricMap; m.roughness = 1; }
+      if (key === 'fabric') { m.map = fabricTexture(SofaFabrics.byId(state.fabric)); m.roughness = 1; fabricMaterials.push(m); }
       else m.color.set(COLORS[key]);
       if (key === 'metal') { m.roughness = 0.35; m.metalness = 0.7; }
       return m;
@@ -361,10 +472,31 @@
       for (var i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i), uv.getX(i));
     }
 
+    // Pose du tissu sur un bloc : il l'enveloppe autour de sa longueur, comme une housse d'une seule pièce.
+    // Le motif suit la longueur du bloc (u) et fait le tour de sa section (v) : il monte sur la face avant,
+    // passe sur le dessus, redescend à l'arrière. Les flancs reçoivent le motif à l'endroit.
+    function wrapUV(geometry, size) {
+      var g = geometry.index ? geometry.toNonIndexed() : geometry;
+      var pos = g.attributes.position, uv = g.attributes.uv, hy = size[1] / 2, hz = size[2] / 2;
+      var pts = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], n = new THREE.Vector3(), e = new THREE.Vector3();
+      for (var i = 0; i < pos.count; i += 3) {
+        pts.forEach(function (p, k) { p.fromBufferAttribute(pos, i + k); });
+        n.subVectors(pts[2], pts[1]).cross(e.subVectors(pts[0], pts[1]));       // normale de la facette
+        var ax = Math.abs(n.x), ay = Math.abs(n.y), az = Math.abs(n.z);
+        pts.forEach(function (p, k) {
+          if (ax > ay && ax > az) uv.setXY(i + k, n.x > 0 ? -p.z : p.z, p.y + hy);                            // flancs
+          else if (az >= ay) uv.setXY(i + k, p.x, n.z > 0 ? p.y + hy : 3 * hy + 2 * hz - p.y);              // avant, arrière
+          else uv.setXY(i + k, p.x, n.y > 0 ? 2 * hy + hz - p.z : 4 * hy + 3 * hz + p.z);                   // dessus, dessous
+        });
+      }
+      return g;
+    }
+
     function buildShape(s, fabric) {
       var out = { position: new THREE.Vector3(), rotX: s.rotX || 0 };
       if (s.type === 'box') {
         out.geometry = s.radius ? roundedBox(s.size, s.radius) : new THREE.BoxGeometry(s.size[0], s.size[1], s.size[2]);
+        if (fabric) out.geometry = wrapUV(out.geometry, s.size);
         out.position.fromArray(s.center);
       } else if (s.type === 'profile') {
         // Contour [z, y] extrudé le long de x, entre x0 et x1 ; « radius » arrondit toutes les arêtes (coussin).
@@ -756,7 +888,8 @@
       },
       setView: function (name, animate) { setView(name, animate && !reduceMotion.matches); },
       refreshDims: refreshDims,
-      repaint: paint
+      repaint: paint,
+      setFabric: applyFabric
     };
   }
 
@@ -788,15 +921,19 @@
   Array.prototype.forEach.call(document.querySelectorAll('[data-look]'), function (b) {
     b.addEventListener('click', function () { setLook(b.getAttribute('data-look')); });
   });
+  renderFabricMenu();
   $('dims-toggle').addEventListener('click', function () { setDims(!state.dims); });
   document.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape' && state.part && !$('lightbox').open) select(null);
+    if (ev.key !== 'Escape' || $('lightbox').open) return;
+    if ($('fabric-menu').open) $('fabric-menu').open = false;
+    else if (state.part) select(null);
   });
 
   // État donné par l'adresse : #position=lit&piece=upright&vue=profil
   function applyHash(animate) {
     var hash = readHash();
     setLook(keyOf(LOOK_NAMES, hash.rendu) || 'covered');
+    setFabric(hash.tissu);
     setPos(keyOf(POS_NAMES, hash.position) || 'sofa', animate);
     if (view3d && (hash.vue || !animate)) view3d.setView(keyOf(VIEW_NAMES, hash.vue) || 'iso', animate);
     select(hash.piece || null);

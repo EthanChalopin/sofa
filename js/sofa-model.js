@@ -796,6 +796,11 @@
     return {
       listing: L,
       width: M.width,
+      // Enveloppes à garnir, pour le calcul du tissu (sofa-bom.js).
+      cover: {
+        seat: { length: 2 * xPanelOut, depth: E.panel.length + 2 * K.wad, drop: S - K.bottom },
+        back: { length: 2 * xPanelOut, height: backH, thick: backT }
+      },
       // Ce dont l'audit de solidité a besoin (sofa-bom.js).
       audit: {
         beamT: beamT, beamH: beamH, legSpan: legPitch, crossSpan: E.panel.length - beamT, pitch: barPitch, deckT: F.deck,

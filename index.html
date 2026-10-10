@@ -35,6 +35,10 @@
           <button type="button" data-look="foam" aria-pressed="false">Mousse</button>
           <button type="button" data-look="covered" aria-pressed="true">Habillé</button>
         </div>
+        <details class="pick" id="fabric-menu">
+          <summary><span class="chip" id="fabric-chip"></span><span id="fabric-name">Tissu</span></summary>
+          <div class="menu" id="fabric-list" role="radiogroup" aria-label="Tissu du garnissage"></div>
+        </details>
         <div class="seg">
           <button type="button" id="dims-toggle" aria-pressed="true">Cotes</button>
         </div>
@@ -83,6 +87,8 @@
   <script src="vendor/OrbitControls.js"></script>
   <script src="js/sofa-model.js"></script>
   <script src="js/sofa-bom.js"></script>
+  <script src="js/fabrics.js"></script>
+  <script src="js/fabric-images.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

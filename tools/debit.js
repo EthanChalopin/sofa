@@ -9,6 +9,7 @@
 var path = require('path');
 var Sofa = require(path.join(__dirname, '..', 'js', 'sofa-model.js'));
 var Bom = require(path.join(__dirname, '..', 'js', 'sofa-bom.js'));
+var Fabrics = require(path.join(__dirname, '..', 'js', 'fabrics.js'));
 
 var arg = process.argv.slice(2).filter(function (a) { return /^--largeur=/.test(a); })[0];
 if (arg) {
@@ -53,6 +54,14 @@ Bom.pieces(model).filter(function (p) { return p.length; }).forEach(function (p)
 title('SOLIDITÉ (100 % = limite admise ; estimations)');
 Bom.audit(model).forEach(function (r) {
   console.log((r.pct + ' %').padStart(6) + (r.pct > 100 ? '  !!  ' : '      ') + r.name.padEnd(34) + r.note);
+});
+
+title('TISSU (rayures d\'avant en arrière ; marge de coupe de 10 % comprise)');
+console.log('Surface à couvrir : ' + cm(Bom.fabricNeed(model, Fabrics.list[0]).area) + ' m²');
+Fabrics.list.forEach(function (f) {
+  var need = Bom.fabricNeed(model, f);
+  console.log('  ' + f.name.padEnd(38) + ('laize ' + f.width + ' cm').padEnd(15) + (need.turned ? 'en travers' : need.lays === 1 ? '1 lé' : need.lays + ' lés').padEnd(12) +
+              (cm(need.metres) + ' m').padStart(7) + (cm(need.bought) + ' m²').padStart(10) + (need.price ? euro(need.price).padStart(11) : ''));
 });
 
 if (plan.warnings.length) {
