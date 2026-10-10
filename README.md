@@ -86,8 +86,7 @@ La page propose quatre rendus, dans l'ordre de fabrication (structure, MDF, mous
 
 ## État du dépôt
 
-- Branche courante : `tissu`, commitée en local. Elle n'est pas encore poussée sur GitHub, où seules `main` et
-  `habillage-blocs` existent.
+- Tout le travail est sur `main`, poussé sur GitHub. Les branches `habillage-blocs` et `tissu` y sont fusionnées.
 - Le dépôt GitHub est public. `tissus/` et `reference/` contiennent des photos de vendeurs.
 - `proposition-mecanisme.png` est périmé : il montre un ancien taquet à manche.
 
