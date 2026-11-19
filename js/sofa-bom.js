@@ -19,16 +19,23 @@
     tube: { name: 'Tube rond acier ø 16 mm, 2 m', length: 200, price: 9.50 },
     sleeve: { name: 'Tube IRL ø 25 mm, 2 m', length: 200, price: 2.29 },
     foot: { name: 'Pied conique hêtre, 10 cm', price: 6.88 },
-    bolt: { name: 'Boulon M10 × 120 avec écrou et rondelles', price: 2.50, estimate: true }
+    bolt: { name: 'Boulon M10 × 120 avec écrou et rondelles', price: 2.50, estimate: true },
+    knob: { name: 'Vis à bouton étoile M8 × 50', price: 2.50, estimate: true },
+    insert: { name: 'Insert fileté M8 à visser dans le bois', price: 0.60, estimate: true }
   };
   // Petites fournitures, chiffrées en bloc.
   var EXTRAS = [{ name: 'Pointes crantées, vis, colliers, chute de hêtre, tourillon ø 12', price: 35, estimate: true }];
   var KERF = 0.4;                                         // trait de scie perdu à chaque coupe
-  // Mousse et ouate : pas encore choisies. Un champ laissé à null apparaît « à remplir » dans MATERIAUX.md.
-  // « quality » : densité et fermeté pour une mousse, grammage pour la ouate. « price » : prix total de la ligne, en euros.
+  // Mousse : un seul prix relevé, sur le configurateur de matelaspourtous.com, pour une plaque d'épaisseur standard.
+  // Les plaques du canapé sont estimées au prorata de leur volume. « minThick » et « maxSide » : limites de la découpe sur mesure.
+  var FOAM_QUOTE = { size: [200, 100, 20], price: 274, read: '10 octobre 2026', minThick: 5, maxSide: 200 };
+  var FOAM_RATE = FOAM_QUOTE.price / (FOAM_QUOTE.size[0] * FOAM_QUOTE.size[1] * FOAM_QUOTE.size[2] / 1000);   // euros par litre
+  // Un champ laissé à null apparaît « à remplir » dans MATERIAUX.md. La ouate n'est pas encore choisie.
+  // « quality » : densité et fermeté pour une mousse, grammage pour la ouate.
+  // « perLitre » : prix d'une mousse au litre. « price » : prix total de la ouate, en euros.
   var SOFT = {
-    seatFoam: { supplier: null, reference: null, quality: null, price: null },
-    backFoam: { supplier: null, reference: null, quality: null, price: null },
+    seatFoam: { supplier: 'Matelas pour tous', reference: 'Découpe de mousse sur mesure', quality: 'HD 40 kg/m³, très ferme', perLitre: FOAM_RATE },
+    backFoam: { supplier: 'Matelas pour tous', reference: 'Découpe de mousse sur mesure', quality: 'HD 40 kg/m³, très ferme', perLitre: FOAM_RATE },
     wadding: { supplier: null, reference: null, quality: null, price: null }
   };
 
@@ -123,7 +130,7 @@
   // Chaque ligne donne la sollicitation en pourcentage de la limite admise (100 % = à ne pas dépasser).
   function audit(model) {
     var A = model.audit, g = 9.81, person = 100 * g;
-    var LIMIT = { softwood: 1100, mdf: 900, plywoodBearing: 1500, steel: 23500 };   // N/cm²
+    var LIMIT = { softwood: 1100, mdf: 900, plywood: 1500, plywoodBearing: 1500, steel: 23500 };   // N/cm² ; contreplaqué bouleau en flexion : environ le tiers de sa résistance
     var E_SOFT = 0.9e6, E_MDF = 0.3e6;
     var W = A.beamT * A.beamH * A.beamH / 6, I = A.beamT * Math.pow(A.beamH, 3) / 12;
     var rows = [];
@@ -148,10 +155,47 @@
         'paroi de 1 mm, effort ' + Math.round(onCam) + ' N sur le taquet');
     row('Boulon de pivot, dans le montant', onBolt / A.uprightT, LIMIT.plywoodBearing, 'M10, effort ' + Math.round(onBolt) + ' N');
 
-    var seat = A.bed.edge + 3, lift = 100 * (A.bed.leg - seat) / (A.bed.pivot - A.bed.leg);
-    var needed = lift * (A.bed.pivot - A.bed.frontLeg) / (A.bed.middle - A.bed.frontLeg);
-    row('Bascule du lit', needed, A.bed.seatMass, '100 kg assis au bord avant ; bloc d\'assise estimé à ' + A.bed.seatMass + ' kg');
+    // Bascule du lit : 100 kg assis au bord avant du dossier rabattu. Le dossier pose au sol par les pieds amovibles,
+    // près du bord. Ce qui dépasse devant eux tirerait le pivot vers le haut ; seul le poids du bloc d'assise le
+    // retient, autour de ses pieds avant comme de ses pieds arrière.
+    var B = A.bed, seatM = mass(model, 'base'), backM = mass(model, 'back');
+    var lift = Math.max(0, (100 * (B.leg - (B.edge + 3)) + backM.kg * (B.leg - backM.d)) / (B.pivot - B.leg));
+    var tip = Math.max(lift * (B.pivot - B.frontLeg) / (seatM.d - B.frontLeg), lift * (B.rearLeg - B.pivot) / (B.rearLeg - seatM.d));
+    row('Bascule du lit', tip, seatM.kg, '100 kg au bord avant, pieds amovibles à ' + fr(B.leg - B.edge) + ' cm du bord ; ' +
+        'bloc d\'assise ' + Math.round(seatM.kg) + ' kg, dossier ' + Math.round(backM.kg) + ' kg (estimés)');
+    // Une personne de 100 kg à un bout du lit, juste au-dessus d'un pied, le charge presque seule (plus la moitié du dossier).
+    // Le pied la transmet au montant par ses vis, qui appuient dans le hêtre du pied.
+    var onSupport = (100 + backM.kg / 2) * g, L = A.bedLeg;
+    row('Pied amovible, vis à bouton', onSupport / L.screws / (L.boltD * L.t), LIMIT.plywoodBearing,
+        L.screws + ' vis M8 ; ' + Math.round(onSupport) + ' N sur le pied');
     return rows;
+  }
+
+  // Masse et centre de gravité (distance d depuis l'avant de l'assise, en position lit) d'un ensemble, d'après le
+  // volume de ses pièces. Tissu, ouate et quincaillerie sont négligés.
+  var DENSITY = { honey: 450, mahogany: 680, padwood: 700, deck: 750, foam: 40 };   // kg/m³ : sapin, contreplaqué bouleau, hêtre, MDF, mousse HD
+  function mass(model, group) {
+    var half = model.seatDepth / 2, pv = model.pivot.back, a = model.angle.bed, kg = 0, moment = 0;
+    function toD(z, y) { return group === 'back' ? half - (pv.z + y * Math.sin(a) + z * Math.cos(a)) : half - z; }
+    model.parts.forEach(function (part) {
+      var rho = DENSITY[part.color];
+      if (part.group !== group || !rho || part.layer === 'cover' || part.symbolic) return;
+      part.shapes.forEach(function (s) {
+        var vol = 0, d = 0;
+        if (s.type === 'box') { vol = s.size[0] * s.size[1] * s.size[2]; d = toD(s.center[2], s.center[1]); }
+        else if (s.type === 'frustum') { vol = Math.pow((s.top + s.bottom) / 2, 2) * (s.y1 - s.y0); d = toD(s.z, (s.y0 + s.y1) / 2); }
+        else if (s.type === 'profile') {
+          var area = 0, cz = 0, cy = 0;
+          s.pts.forEach(function (p, i) {
+            var q = s.pts[(i + 1) % s.pts.length], c = p[0] * q[1] - q[0] * p[1];
+            area += c / 2; cz += (p[0] + q[0]) * c; cy += (p[1] + q[1]) * c;
+          });
+          vol = Math.abs(area) * (s.x1 - s.x0); d = toD(cz / (6 * area), cy / (6 * area));
+        }
+        kg += vol * rho / 1e6; moment += vol * rho / 1e6 * d;
+      });
+    });
+    return { kg: kg, d: moment / kg };
   }
 
   // Tissu à acheter. Les rayures et les motifs courent d'avant en arrière sur l'assise et montent sur le
@@ -193,7 +237,7 @@
     };
   }
 
-  var api = { fabricNeed: fabricNeed, CATALOG: CATALOG, EXTRAS: EXTRAS, SOFT: SOFT, KERF: KERF, pieces: pieces, plan: plan, audit: audit };
+  var api = { fabricNeed: fabricNeed, CATALOG: CATALOG, EXTRAS: EXTRAS, SOFT: SOFT, FOAM_QUOTE: FOAM_QUOTE, KERF: KERF, pieces: pieces, plan: plan, audit: audit };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SofaBom = api;
 })(typeof self !== 'undefined' ? self : this);

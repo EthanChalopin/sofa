@@ -27,7 +27,7 @@
   var VIEW_NAMES = { iso: '3-4', front: 'face', side: 'profil', top: 'dessus', mech: 'mecanisme' };
   var PHOTO_COUNT = 16;
 
-  var state = { part: null, pos: 'sofa', dims: true, look: 'covered', fabric: SofaFabrics.list[0].id };
+  var state = { part: null, pos: 'sofa', dims: true, body: true, look: 'covered', fabric: SofaFabrics.list[0].id };
   var view3d = null;
 
   function $(id) { return document.getElementById(id); }
@@ -139,7 +139,7 @@
       root.appendChild(el('p', {
         class: 'note',
         text: 'Lit : le dossier bascule d’environ ' + model.flipDeg + '° vers l’avant autour de deux boulons, passe au-dessus ' +
-              'de l’assise et se pose à plat devant elle. Les accoudoirs se retrouvent à la verticale et deviennent les pieds du lit.'
+              'de l’assise et se pose à plat devant elle. Les accoudoirs pointent alors vers le sol, sans le toucher ; deux pieds qu’on visse au montant portent le bord du lit.'
       }));
       root.appendChild(el('p', { class: 'meta', text: 'Version modifiée : deux blocs de mousse garnis, position détente, banquette fixe' }));
       root.appendChild(dimsTable(model.custom));
@@ -331,6 +331,12 @@
     state.dims = on;
     $('dims-toggle').setAttribute('aria-pressed', String(on));
     if (view3d) view3d.refreshDims();
+  }
+
+  function setBody(on) {
+    state.body = on;
+    $('body-toggle').setAttribute('aria-pressed', String(on));
+    if (view3d) view3d.repaint();
   }
 
   function readHash() {
@@ -527,6 +533,7 @@
     // --- pièces ---
 
     // Trois ensembles : le bâti fixe, le dossier qui tourne autour des boulons, les taquets autour de leur barre.
+    // Les pieds amovibles du lit (« bedOnly ») sont portés par le dossier et ne sont montrés qu'en position lit.
     var groups = { base: new THREE.Group(), back: new THREE.Group(), cam: new THREE.Group() };
     groups.back.position.set(0, model.pivot.back.y, model.pivot.back.z);
     groups.cam.position.set(0, model.pivot.cam.y, model.pivot.cam.z);
@@ -552,6 +559,100 @@
       });
     });
 
+    // --- mannequin ---
+    // Un adulte de 1,80 m : assis contre le dossier, dont il suit l'inclinaison, ou allongé au milieu du lit.
+    // Pendant la bascule vers le lit, il s'efface. Longueurs entre articulations et rayons courants pour cette taille (cm).
+    var BODY = { hip: 9, torso: 52, neck: 12, head: 5, headR: 9, shoulder: 19, upperArm: 30, forearm: 26, hand: 17,
+                 hipWidth: 9, thigh: 44, shin: 42, ankle: 8, foot: 22, sink: 2, back: 11 };
+    var bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xc9b8a6, roughness: 0.85 });
+    var body = new THREE.Group();
+    scene.add(body);
+    // Un segment : capsule de rayon r, longue de « len » entre les centres de ses deux bouts ; « wide » l'élargit sur le côté.
+    function segment(len, r, wide) {
+      var mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 6, 18), bodyMaterial);
+      mesh.castShadow = mesh.receiveShadow = true;
+      mesh.raycast = noRaycast;
+      mesh.userData.len = len;
+      mesh.scale.x = wide || 1;
+      body.add(mesh);
+      return mesh;
+    }
+    function pair(len, r, wide) { return [segment(len, r, wide), segment(len, r, wide)]; }
+    var SEG = {
+      torso: segment(BODY.torso - 8, BODY.back, 1.5), neck: segment(BODY.neck - 4, 5), head: segment(BODY.head, BODY.headR, 0.85),
+      upperArm: pair(BODY.upperArm, 4.5), forearm: pair(BODY.forearm, 3.8), hand: pair(BODY.hand, 2.6, 1.6),
+      thigh: pair(BODY.thigh, 7.5), shin: pair(BODY.shin, 5.5), foot: pair(BODY.foot, 4, 1.2)
+    };
+    var basis = new THREE.Matrix4(), bx = new THREE.Vector3(), bz = new THREE.Vector3();
+    // Pose un segment à partir du point « from », dans la direction « dir » ; « side » oriente son côté large. Rend son autre bout.
+    function put(mesh, from, dir, side) {
+      var d = dir.clone().normalize(), len = mesh.userData.len;
+      bx.copy(side).addScaledVector(d, -side.dot(d)).normalize();
+      bz.crossVectors(bx, d);
+      basis.makeBasis(bx, d, bz);
+      mesh.quaternion.setFromRotationMatrix(basis);
+      mesh.position.copy(from).addScaledVector(d, len / 2);
+      return from.clone().addScaledVector(d, len);
+    }
+    function V(x, y, z) { return new THREE.Vector3(x, y, z); }
+    // Tronc, cou et tête : depuis le centre des hanches, le long de « up » ; la tête suit « headDir ».
+    function trunk(hip, up, headDir, side) {
+      put(SEG.torso, hip.clone().addScaledVector(up, 4), up, side);
+      var shoulders = hip.clone().addScaledVector(up, BODY.torso);
+      put(SEG.neck, shoulders, headDir, side);
+      put(SEG.head, shoulders.clone().addScaledVector(headDir, 17), headDir, side);
+      return shoulders.addScaledVector(up, -3);
+    }
+    // Assis : le dos contre la face avant du dossier, incliné de « r » ; les fesses enfoncées de « sink » dans l'assise.
+    function sit(r) {
+      var S = model.sitter, pv = model.pivot.back, side = V(1, 0, 0);
+      var up = V(0, Math.cos(r), Math.sin(r)), front = V(0, -Math.sin(r), Math.cos(r));
+      var hipY = S.seat - BODY.sink + BODY.hip, p = S.face - BODY.back;           // ligne du tronc, à « back » devant le dossier
+      var t = (hipY - pv.y - p * Math.sin(r)) / Math.cos(r);
+      var cx = 32 - model.width / 2;                                             // près de l'accoudoir du fond : de profil, il ne cache pas le montant
+      var hip = V(cx, hipY, pv.z + t * Math.sin(r) - p * Math.cos(r));
+      var shoulders = trunk(hip, up, up.clone().add(V(0, 0.6, 0)).normalize(), side);   // la tête se redresse pour regarder devant
+      var shin = V(0, -Math.cos(0.17), Math.sin(0.17));                          // jambes : tibias un peu en avant, pieds à plat
+      var kneeY = BODY.ankle - shin.y * BODY.shin, rise = (kneeY - hipY) / BODY.thigh;
+      var thigh = V(0, rise, Math.sqrt(1 - rise * rise));
+      [-1, 1].forEach(function (s, i) {
+        var knee = put(SEG.thigh[i], hip.clone().add(V(s * BODY.hipWidth, 0, 0)), thigh, side);
+        var ankle = put(SEG.shin[i], knee, shin, side);
+        put(SEG.foot[i], ankle.clone().add(V(0, -4, -3)), V(0, 0, 1), side);
+        // Bras le long du tronc, un peu en avant ; avant-bras et mains posés sur les cuisses.
+        var arm = up.clone().multiplyScalar(-0.94).addScaledVector(front, 0.34).add(V(s * 0.08, 0, 0));
+        var elbow = put(SEG.upperArm[i], shoulders.clone().add(V(s * BODY.shoulder, 0, 0)), arm, side);
+        var lap = hip.clone().add(V(s * (BODY.hipWidth - 1), 8, 0)).addScaledVector(thigh, 0.55 * BODY.thigh);
+        var fore = lap.sub(elbow);
+        put(SEG.hand[i], put(SEG.forearm[i], elbow, fore, side), fore, side);
+      });
+    }
+    // Couché en chien de fusil : sur le côté, la tête vers un bout du canapé, tourné vers le bord du lit, dos rond,
+    // hanches et genoux pliés, mains près du visage. Les épaules et les hanches sont alors l'une au-dessus de l'autre.
+    function lie() {
+      var o = model.overall.bed, y0 = model.sitter.seat - 1, zc = (o.min[2] + o.max[2]) / 2, side = V(0, 1, 0);
+      var hip = V(-5, y0 + 1.5 * BODY.back, zc - 18);
+      var shoulders = trunk(hip, V(1, 0, 0.3).normalize(), V(1, 0, 0.7).normalize(), side);   // dos rond, menton rentré
+      [-1, 1].forEach(function (s, i) {
+        // Genoux remontés vers la poitrine, talons ramenés sous les fesses ; la jambe du dessus un peu plus pliée.
+        var knee = put(SEG.thigh[i], hip.clone().add(V(0, s * BODY.hipWidth, 0)), V(0.35 + 0.1 * s, 0, 1), side);
+        var ankle = put(SEG.shin[i], knee, V(-0.7, 0, -0.7 - 0.1 * s), side);
+        put(SEG.foot[i], ankle.clone().add(V(-2, 0, 2)), V(-1, 0, 0.2), side);
+        // Coudes contre les genoux, mains près du visage.
+        var elbow = put(SEG.upperArm[i], shoulders.clone().add(V(0, s * 13, 0)), V(-0.6, 0, 1), side);
+        var fore = V(0.8, 0, -0.15 + 0.1 * s);
+        put(SEG.hand[i], put(SEG.forearm[i], elbow, fore, side), fore, side);
+      });
+    }
+    // Assis dès que le dossier est en position canapé ou détente, allongé une fois le lit fait, absent entre les deux.
+    function poseBody() {
+      var seated = stageNow >= STAGE.sofa - 1e-6;
+      body.visible = state.body && !state.part && (seated || bedReady);
+      if (!body.visible) return;
+      if (seated) sit(groups.back.rotation.x); else lie();
+      dirty = true;
+    }
+
     // --- positions ---
     // Tout se déroule le long d'un seul axe « stage », gradué en secondes : lit (0) → canapé → détente.
     // Passer d'une position à l'autre revient à parcourir cet axe, dans un sens ou dans l'autre.
@@ -562,6 +663,8 @@
     var STAGE = { bed: 0, sofa: 0.9, lounge: 3.5 };
     var RECLINE = { lifted: 0.35, turned: 1.25 }, RAISE = { settled: 0.45, snapped: 0.95 };   // jalons, comptés depuis « canapé »
     var A = model.angle, CAM = model.cam;
+    var BED_READY = 0.02;                                 // en deçà, le dossier est posé : les pieds du lit sont vissés
+    var bedReady = false;
     var stageNow = STAGE.sofa, stageTarget = STAGE.sofa, stageFrom = STAGE.sofa, stageStart = 0, stageDuration = 0;
 
     function clamp01(v) { return Math.max(0, Math.min(1, v)); }
@@ -587,6 +690,9 @@
     function applyStage(v) {
       stageNow = v;
       var back, cam = CAM.engaged, s = v - STAGE.sofa, end = STAGE.lounge - STAGE.sofa;
+      var wasBed = bedReady;
+      bedReady = v <= BED_READY;
+      if (bedReady !== wasBed) paint();                   // les pieds du lit apparaissent ou disparaissent
       if (s <= 0) {
         back = mix(A.bed, A.sofa, phase(v, 0, STAGE.sofa));
       } else if (stageTarget > stageFrom) {
@@ -598,6 +704,7 @@
       }
       groups.back.rotation.x = back;
       groups.cam.rotation.x = cam;
+      poseBody();
       dirty = true;
     }
 
@@ -708,7 +815,7 @@
     function paint() {
       meshes.forEach(function (m) {
         var part = m.userData.part, id = part.id, mat = m.material;
-        m.visible = id === state.part || shown(part);
+        m.visible = (id === state.part || shown(part)) && (!part.bedOnly || bedReady);
         var ghost = !!state.part && id !== state.part;
         if (mat.transparent !== ghost) {
           mat.transparent = ghost;
@@ -719,6 +826,7 @@
         mat.emissiveIntensity = id === hovered && id !== state.part ? 0.14 : 0;
         if (m.userData.edges) m.userData.edges.material = ghost ? ghostEdgeMaterial : edgeMaterial;
       });
+      poseBody();
       dirty = true;
     }
 
@@ -764,7 +872,9 @@
     function setView(name, animate) {
       currentView = VIEWS[name] ? name : 'iso';
       userMoved = false;
-      var frame = frameFrom(VIEWS[currentView], currentView === 'mech' ? focusBox : overallBox());
+      var box = currentView === 'mech' ? focusBox : overallBox();
+      if (currentView !== 'mech' && state.body && state.pos !== 'bed') box.max.y = Math.max(box.max.y, model.sitter.seat + 85);   // la tête du mannequin assis
+      var frame = frameFrom(VIEWS[currentView], box);
       moveCamera(frame.position, frame.target, animate);
       refreshDims();                                      // la vue rapprochée n'affiche pas les cotes hors tout
     }
@@ -923,6 +1033,7 @@
   });
   renderFabricMenu();
   $('dims-toggle').addEventListener('click', function () { setDims(!state.dims); });
+  $('body-toggle').addEventListener('click', function () { setBody(!state.body); });
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape' || $('lightbox').open) return;
     if ($('fabric-menu').open) $('fabric-menu').open = false;

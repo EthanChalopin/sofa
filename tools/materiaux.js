@@ -5,7 +5,7 @@
  *   node tools/materiaux.js --largeur=180   pour une autre longueur de canapé
  *
  * Le document est entièrement recalculé à partir du modèle : ne pas le modifier à la main.
- * Ce qui reste « à remplir » (mousse, ouate) se saisit dans le bloc SOFT de js/sofa-bom.js.
+ * Ce qui reste « à remplir » (la ouate) se saisit dans le bloc SOFT de js/sofa-bom.js, où se trouve aussi le prix de la mousse.
  */
 'use strict';
 
@@ -90,17 +90,43 @@ add('## 2. Quincaillerie', '',
 // ---------------------------------------------------------------- mousse et ouate
 var seatFoam = part('seatFoam'), backFoam = part('backFoam'), cover = model.cover;
 var backH = backFoam.size[1], len = backFoam.size[0];
-var foamRows = [
-  ['Mousse d\'assise', 1, size(seatFoam), num(seatFoam.size[0] * seatFoam.size[1] * seatFoam.size[2] / 1000) + ' L', Bom.SOFT.seatFoam],
-  ['Mousse du dossier, côté assise', 1, num(len) + ' × ' + num(backH) + ' × ' + num(M.back.foam[0]) + ' cm', num(len * backH * M.back.foam[0] / 1000) + ' L', Bom.SOFT.backFoam],
-  ['Mousse du dossier, côté couchage', 1, num(len) + ' × ' + num(backH) + ' × ' + num(M.back.foam[1]) + ' cm', num(len * backH * M.back.foam[1] / 1000) + ' L', Bom.SOFT.backFoam]
-].map(function (r) { return [r[0], r[1], r[2], r[3], fill(r[4].quality), fill(r[4].supplier), fill(r[4].reference), fill(r[4].price, ' €')]; });
+var Q = Bom.FOAM_QUOTE;
+var sameBack = M.back.foam[0] === M.back.foam[1];         // deux plaques identiques : une seule ligne à commander
+var foams = [{ name: 'Mousse d\'assise', qty: 1, size: seatFoam.size, soft: Bom.SOFT.seatFoam }].concat(sameBack ? [
+  { name: 'Mousse du dossier', qty: 2, size: [len, backH, M.back.foam[0]], soft: Bom.SOFT.backFoam }
+] : [
+  { name: 'Mousse du dossier, côté assise', qty: 1, size: [len, backH, M.back.foam[0]], soft: Bom.SOFT.backFoam },
+  { name: 'Mousse du dossier, côté couchage', qty: 1, size: [len, backH, M.back.foam[1]], soft: Bom.SOFT.backFoam }
+]);
+foams.forEach(function (f) {
+  f.litres = f.qty * f.size[0] * f.size[1] * f.size[2] / 1000;
+  f.price = f.soft.perLitre === null ? null : f.litres * f.soft.perLitre;
+});
+var foamKnown = foams.every(function (f) { return f.price !== null; });
+var foamTotal = foamKnown ? foams.reduce(function (t, f) { return t + f.price; }, 0) : null;
+// Ce que le configurateur du vendeur ne sait pas découper tel quel.
+var foamLimits = [];
+foams.forEach(function (f) {
+  if (f.size[2] < Q.minThick) foamLimits.push('- **À vérifier avant de commander** : la plaque « ' + f.name.toLowerCase() + ' » fait ' + num(f.size[2]) +
+    ' cm d\'épaisseur, sous le minimum du sur-mesure (' + Q.minThick + ' cm). Elle ne se commande que si ' + num(f.size[2]) + ' cm figure dans les épaisseurs standard du site.');
+  if (Math.max(f.size[0], f.size[1]) > Q.maxSide) foamLimits.push('- **À régler** : la plaque « ' + f.name.toLowerCase() + ' » dépasse les ' + Q.maxSide +
+    ' cm que le site sait découper : elle est à commander en deux morceaux ou ailleurs.');
+});
 add('', '## 3. Mousse', '',
-    table(['Plaque', 'Qté', 'Dimensions', 'Volume', 'Densité et fermeté', 'Fournisseur', 'Référence', 'Prix'], foamRows), '',
-    '- La mousse d\'assise se colle sur le plateau en MDF. Elle reçoit une entaille à chaque bout pour coiffer les flancs, ' +
-    'et une saignée dessous pour le fourreau du tube : voir la pièce « Mousse d\'assise » dans la page.',
-    '- Les deux plaques du dossier se collent de part et d\'autre du cadre. La plus épaisse est du côté qui devient le couchage.',
-    '- Le prix des deux plaques du dossier se saisit en une seule ligne (`backFoam`).');
+    table(['Plaque', 'Qté', 'Dimensions', 'Volume', 'Densité et fermeté', 'Fournisseur', 'Référence', 'Prix'], foams.map(function (f) {
+      return [f.name, f.qty, f.size.map(num).join(' × ') + ' cm', num(f.litres) + ' L', fill(f.soft.quality), fill(f.soft.supplier), fill(f.soft.reference),
+              f.price === null ? TODO : euro(f.price) + ' *(estimation)*'];
+    })), '',
+    foamKnown ? 'Sous-total : **' + euro(foamTotal) + '** (estimation, hors frais de port).' : 'Sous-total : ' + TODO, '',
+    '- Prix estimés au prorata du volume, à partir d\'un seul prix relevé sur matelaspourtous.com le ' + Q.read + ' : ' + euro(Q.price) +
+    ' la plaque de ' + Q.size.map(num).join(' × ') + ' cm, soit ' + euro(Q.price / (Q.size[0] * Q.size[1] * Q.size[2] / 1000)) + ' le litre. ' +
+    'Le site ne facture pas forcément au volume exact, et les frais de port ne sont pas comptés : saisir chaque plaque dans son configurateur avant de commander.',
+    '- Ce prix est celui d\'une épaisseur standard. Le site annonce le standard 30 % moins cher : pour une épaisseur hors de sa liste, compter environ 43 % de plus.',
+    foamLimits.concat([
+      '- La mousse d\'assise se colle sur le plateau en MDF. Elle reçoit une entaille à chaque bout pour coiffer les flancs, ' +
+      'et une saignée dessous pour le fourreau du tube : voir la pièce « Mousse d\'assise » dans la page.',
+      '- Les deux plaques du dossier se collent de part et d\'autre du cadre.' + (sameBack ? '' : ' Celle de ' + num(M.back.foam[0]) + ' cm va du côté où l\'on s\'adosse, celle de ' + num(M.back.foam[1]) + ' cm du côté qui devient le couchage.')
+    ]).join('\n'));
 
 var seatWad = cover.seat.length * (cover.seat.depth + 2 * cover.seat.drop) / 1e4;
 var backWad = cover.back.length * 2 * (cover.back.height + cover.back.thick) / 1e4;
@@ -108,7 +134,7 @@ add('', '## 4. Ouate', '',
     table(['Emplacement', 'Surface', 'Épaisseur posée', 'Grammage', 'Fournisseur', 'Référence', 'Prix'], [
       ['Assise : dessus, avant et arrière', num(seatWad) + ' m²', num(M.cover.wad) + ' cm', fill(Bom.SOFT.wadding.quality), fill(Bom.SOFT.wadding.supplier), fill(Bom.SOFT.wadding.reference), ''],
       ['Dossier : tout le tour, sauf les deux bouts', num(backWad) + ' m²', num(M.cover.wad) + ' cm', 'idem', 'idem', 'idem', ''],
-      ['**Total**', '**' + num(seatWad + backWad) + ' m²**', '', '', '', '', fill(Bom.SOFT.wadding.price, ' €')]
+      ['**Total**', '**' + num(seatWad + backWad) + ' m²**', '', '', '', '', Bom.SOFT.wadding.price === null ? TODO : euro(Bom.SOFT.wadding.price)]
     ]), '',
     '- Surfaces nettes, sans marge de coupe.',
     '- Pas de ouate sur les flancs de l\'assise : le tissu y est tendu à même le bois, pour laisser travailler le montant et le taquet.');
@@ -130,21 +156,22 @@ add('', '## 5. Tissu', '',
     Fabrics.list.map(function (f) { return '- **' + f.name + '** — ' + f.note + (f.url ? ' [Fiche du vendeur](' + f.url + ')' : ''); }).join('\n'));
 
 // ---------------------------------------------------------------- hors liste, total
-add('', '## 6. Réalisé à part', '', 'Les montants et les manchettes sont fabriqués par un ami : ils ne sont pas dans les achats.', '',
-    table(['Pièce', 'Qté', 'Dimensions hors tout', 'Matière'], ['upright', 'pad'].map(function (id) {
+add('', '## 6. Réalisé à part', '', 'Les montants et les pieds amovibles du lit sont fabriqués par un ami : ils ne sont pas dans les achats.', '',
+    table(['Pièce', 'Qté', 'Dimensions hors tout', 'Matière'], ['upright', 'bedLeg'].map(function (id) {
       var p = part(id); return [p.name, p.qty, size(p), p.material];
     })));
 
-var soft = [Bom.SOFT.seatFoam.price, Bom.SOFT.backFoam.price, Bom.SOFT.wadding.price];
-var softKnown = soft.every(function (v) { return v !== null; });
+var wadPrice = Bom.SOFT.wadding.price;
+var known = plan.total + (foamTotal || 0) + (wadPrice || 0);
+var missing = [foamKnown ? null : 'mousse', wadPrice === null ? 'ouate' : null].filter(Boolean);
 add('', '## Récapitulatif', '',
     table(['Poste', 'Montant'], [
       ['Bois et panneaux', euro(subtotal(isWood))],
       ['Quincaillerie', euro(subtotal(isHardware))],
-      ['Mousse', Bom.SOFT.seatFoam.price !== null && Bom.SOFT.backFoam.price !== null ? euro(Bom.SOFT.seatFoam.price + Bom.SOFT.backFoam.price) : TODO],
-      ['Ouate', fill(Bom.SOFT.wadding.price, ' €')],
+      ['Mousse', foamKnown ? euro(foamTotal) + ' *(estimation)*' : TODO],
+      ['Ouate', wadPrice === null ? TODO : euro(wadPrice)],
       ['Tissu', 'selon le tissu choisi (tableau du § 5)'],
-      ['**Total hors tissu**', softKnown ? '**' + euro(plan.total + soft.reduce(function (t, v) { return t + v; }, 0)) + '**' : euro(plan.total) + ' + mousse et ouate']
+      ['**Total hors tissu**', missing.length ? euro(known) + ' + ' + missing.join(' et ') : '**' + euro(known) + '**']
     ]), '',
     'Ne sont pas comptés : la colle pour la mousse, les agrafes et le fil, la finition du bois apparent.', '');
 
