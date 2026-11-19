@@ -12,12 +12,13 @@ Magasin : Leroy Merlin.
 
 | Article | Qté | Prix | Total | Sert à |
 |---|---|---|---|---|
-| Chevron sapin traité 50 × 70 mm, 3 m | 6 | 7,89 € | 47,34 € | 2 × longeron de dossier de 196 cm ; 6 × entretoise de dossier de 27 cm ; 2 × renfort de pivot de 75 cm ; 2 × longeron d'assise de 190,6 cm ; 6 × traverse d'assise de 65 cm |
-| Planche sapin rabotée 27 × 140 mm, 2,4 m | 1 | 18,90 € | 18,90 € | 2 × flanc de 75 cm |
-| Panneau MDF 18 mm, 250 × 122 cm | 1 | 49,90 € | 49,90 € | 1 × plateau d'assise de 180,6 × 75 cm |
-| Panneau MDF 10 mm, 250 × 122 cm | 1 | 44,90 € | 44,90 € | 2 × peau de dossier de 196 × 41 cm |
+| Chevron sapin traité 50 × 70 mm, 3 m | 6 | 7,89 € | 47,34 € | 2 × longeron de dossier de 196 cm ; 6 × entretoise de dossier de 17 cm ; 2 × renfort de pivot de 85 cm ; 2 × longeron d'assise de 190,6 cm ; 6 × traverse d'assise de 75 cm |
+| Planche sapin rabotée 27 × 140 mm, 2,4 m | 1 | 18,90 € | 18,90 € | 2 × flanc de 85 cm |
+| Panneau MDF 18 mm, 250 × 122 cm | 1 | 49,90 € | 49,90 € | 1 × plateau d'assise de 180,6 × 85 cm |
+| Panneau MDF 10 mm, 250 × 122 cm | 1 | 44,90 € | 44,90 € | 2 × peau de dossier de 196 × 31 cm |
+| Tourillon / rond de hêtre ø 30 mm, 1 m *(estimation)* | 1 | 6,50 € | 6,50 € | 2 × butée de 10,7 cm |
 
-Sous-total : **161,04 €**
+Sous-total : **167,54 €**
 
 ### Plan de coupe
 
@@ -27,107 +28,101 @@ Trait de scie compté : 4 mm.
 
 | N° | Coupes (cm) | Chute |
 |---|---|---|
-| 1 | 196 (longeron de dossier) + 75 (renfort de pivot) + 27 (entretoise de dossier) | 1,2 cm |
-| 2 | 196 (longeron de dossier) + 75 (renfort de pivot) + 27 (entretoise de dossier) | 1,2 cm |
-| 3 | 190,6 (longeron d'assise) + 65 (traverse d'assise) + 27 (entretoise de dossier) | 16,6 cm |
-| 4 | 190,6 (longeron d'assise) + 65 (traverse d'assise) + 27 (entretoise de dossier) | 16,6 cm |
-| 5 | 65 (traverse d'assise) + 65 (traverse d'assise) + 65 (traverse d'assise) + 65 (traverse d'assise) + 27 (entretoise de dossier) | 11,4 cm |
-| 6 | 27 (entretoise de dossier) | 273 cm |
+| 1 | 196 (longeron de dossier) + 85 (renfort de pivot) + 17 (entretoise de dossier) | 1,2 cm |
+| 2 | 196 (longeron de dossier) + 85 (renfort de pivot) + 17 (entretoise de dossier) | 1,2 cm |
+| 3 | 190,6 (longeron d'assise) + 75 (traverse d'assise) + 17 (entretoise de dossier) | 16,6 cm |
+| 4 | 190,6 (longeron d'assise) + 75 (traverse d'assise) + 17 (entretoise de dossier) | 16,6 cm |
+| 5 | 75 (traverse d'assise) + 75 (traverse d'assise) + 75 (traverse d'assise) + 17 (entretoise de dossier) + 17 (entretoise de dossier) | 39,4 cm |
+| 6 | 75 (traverse d'assise) | 225 cm |
 
 **Planche sapin rabotée 27 × 140 mm, 2,4 m**
 
 | N° | Coupes (cm) | Chute |
 |---|---|---|
-| 1 | 75 (flanc) + 75 (flanc) | 89,6 cm |
+| 1 | 85 (flanc) + 85 (flanc) | 69,6 cm |
 
 **Panneau MDF 18 mm, 250 × 122 cm**
 
 | N° | Coupes (cm) | Chute |
 |---|---|---|
-| 1 | 180,6 × 75 (plateau d'assise) | — |
+| 1 | 180,6 × 85 (plateau d'assise) | — |
 
 **Panneau MDF 10 mm, 250 × 122 cm**
 
 | N° | Coupes (cm) | Chute |
 |---|---|---|
-| 1 | 196 × 41 (peau de dossier) | — |
-| 1 | 196 × 41 (peau de dossier) | — |
+| 1 | 196 × 31 (peau de dossier) | — |
+| 1 | 196 × 31 (peau de dossier) | — |
+
+**Tourillon / rond de hêtre ø 30 mm, 1 m**
+
+| N° | Coupes (cm) | Chute |
+|---|---|---|
+| 1 | 10,7 (butée) + 10,7 (butée) | 78,2 cm |
 
 ## 2. Quincaillerie
 
 | Article | Qté | Prix | Total | Sert à |
 |---|---|---|---|---|
-| Tube rond acier ø 16 mm, 2 m | 1 | 9,50 € | 9,50 € | 1 × tube de commande de 200 cm |
-| Tube IRL ø 25 mm, 2 m | 1 | 2,29 € | 2,29 € | 1 × fourreau de 180,6 cm |
-| Pied conique hêtre, 10 cm | 6 | 6,88 € | 41,28 € | 6 × pied |
+| Pied de meuble hêtre, 5 cm *(estimation)* | 6 | 6,88 € | 41,28 € | 6 × pied |
 | Boulon M10 × 120 avec écrou et rondelles *(estimation)* | 2 | 2,50 € | 5,00 € | 2 × boulon de pivot |
-| Vis à bouton étoile M8 × 50 *(estimation)* | 4 | 2,50 € | 10,00 € | 4 × vis à bouton des pieds |
-| Insert fileté M8 à visser dans le bois *(estimation)* | 4 | 0,60 € | 2,40 € | 4 × vis à bouton des pieds |
-| Pointes crantées, vis, colliers, chute de hêtre, tourillon ø 12 *(estimation)* | 1 | 35,00 € | 35,00 € | — |
+| Pointes crantées, vis, patins feutre *(estimation)* | 1 | 30,00 € | 30,00 € | — |
 
-Sous-total : **105,47 €** (dont 52,40 € estimés).
-
-À façonner dans la chute de hêtre et le tourillon :
-
-| Pièce | Qté | Dimensions | Matière |
-|---|---|---|---|
-| Taquet | 2 | 9,2 × 4 × 3 cm | Hêtre massif, fil dans la longueur |
-| Levier de commande | 2 | 19,3 × 5,5 × 1,5 cm | Hêtre massif, collé et vissé sur la face du taquet |
-| Pion de fin de course | 2 | 3 × 1,2 × 1,2 cm | Tourillon hêtre collé dans le panneau |
+Sous-total : **76,28 €** (dont 82,78 € estimés).
 
 ## 3. Mousse
 
 | Plaque | Qté | Dimensions | Volume | Densité et fermeté | Fournisseur | Référence | Prix |
 |---|---|---|---|---|---|---|---|
-| Mousse d'assise | 1 | 196 × 75 × 16 cm | 235,2 L | HD 40 kg/m³, très ferme | Matelas pour tous | Découpe de mousse sur mesure | 161,11 € *(estimation)* |
-| Mousse du dossier, côté assise | 1 | 196 × 41 × 10 cm | 80,4 L | HD 40 kg/m³, très ferme | Matelas pour tous | Découpe de mousse sur mesure | 55,05 € *(estimation)* |
-| Mousse du dossier, côté couchage | 1 | 196 × 41 × 5 cm | 40,2 L | HD 40 kg/m³, très ferme | Matelas pour tous | Découpe de mousse sur mesure | 27,52 € *(estimation)* |
+| Mousse d'assise | 1 | 196 × 85 × 16 cm | 266,6 L | HD 40 kg/m³, très ferme | Matelas pour tous | Découpe de mousse sur mesure | 182,59 € *(estimation)* |
+| Mousse du dossier, côté assise | 1 | 196 × 31 × 10 cm | 60,8 L | HD 40 kg/m³, très ferme | Matelas pour tous | Découpe de mousse sur mesure | 41,62 € *(estimation)* |
+| Mousse du dossier, côté couchage | 1 | 196 × 31 × 5 cm | 30,4 L | HD 40 kg/m³, très ferme | Matelas pour tous | Découpe de mousse sur mesure | 20,81 € *(estimation)* |
 
-Sous-total : **243,68 €** (estimation, hors frais de port).
+Sous-total : **245,02 €** (estimation, hors frais de port).
 
 - Prix estimés au prorata du volume, à partir d'un seul prix relevé sur matelaspourtous.com le 10 octobre 2026 : 274,00 € la plaque de 200 × 100 × 20 cm, soit 0,69 € le litre. Le site ne facture pas forcément au volume exact, et les frais de port ne sont pas comptés : saisir chaque plaque dans son configurateur avant de commander.
 - Ce prix est celui d'une épaisseur standard. Le site annonce le standard 30 % moins cher : pour une épaisseur hors de sa liste, compter environ 43 % de plus.
-- La mousse d'assise se colle sur le plateau en MDF. Elle reçoit une entaille à chaque bout pour coiffer les flancs, et une saignée dessous pour le fourreau du tube : voir la pièce « Mousse d'assise » dans la page.
+- La mousse d'assise se colle sur le plateau en MDF. Elle reçoit une entaille à chaque bout pour coiffer les flancs : voir la pièce « Mousse d'assise » dans la page.
 - Les deux plaques du dossier se collent de part et d'autre du cadre. Celle de 10 cm va du côté où l'on s'adosse, celle de 5 cm du côté qui devient le couchage.
 
 ## 4. Ouate
 
 | Emplacement | Surface | Épaisseur posée | Grammage | Fournisseur | Référence | Prix |
 |---|---|---|---|---|---|---|
-| Assise : dessus, avant et arrière | 2,5 m² | 1 cm | **à remplir** | **à remplir** | **à remplir** |  |
-| Dossier : tout le tour, sauf les deux bouts | 2,6 m² | 1 cm | idem | idem | idem |  |
-| **Total** | **5,1 m²** |  |  |  |  | **à remplir** |
+| Assise : dessus, avant et arrière | 2,7 m² | 1 cm | **à remplir** | **à remplir** | **à remplir** |  |
+| Dossier : tout le tour, sauf les deux bouts | 2,2 m² | 1 cm | idem | idem | idem |  |
+| **Total** | **5 m²** |  |  |  |  | **à remplir** |
 
 - Surfaces nettes, sans marge de coupe.
-- Pas de ouate sur les flancs de l'assise : le tissu y est tendu à même le bois, pour laisser travailler le montant et le taquet.
+- Pas de ouate sur les flancs de l'assise : le tissu y est tendu à même le bois, pour laisser travailler le montant.
 
 ## 5. Tissu
 
-Surface à couvrir : **5,8 m²** (les deux blocs, sans le dessous de l'assise). Un seul tissu à choisir parmi les 19 ci-dessous.
+Surface à couvrir : **5,6 m²** (les deux blocs, sans le dessous de l'assise). Un seul tissu à choisir parmi les 19 ci-dessous.
 
 Le métrage à acheter dépasse cette surface : le tissu se vend au mètre dans une largeur fixe, et il faut le plus souvent plusieurs largeurs cousues côte à côte. Il compte les coutures, 5 cm de retour agrafé sous le cadre, le raccord du motif quand il est connu et 10 % de marge.
 
 | Tissu | Vendeur | Laize | Prix au mètre | À acheter | Soit | Prix | Pose |
 |---|---|---|---|---|---|---|---|
-| Vert chiné | — | 140 cm | — | 6,2 m | 8,7 m² | — | 2 largeurs par bloc |
-| Toile rayée bleu-vert | Tissus Hemmers | 160 cm | 17,09 € | 6,2 m | 9,9 m² | 105,96 € | 2 largeurs par bloc |
-| Toile rayée Sicilia multicolore | Tissus Hemmers | 160 cm | 17,09 € | 6,2 m | 9,9 m² | 105,96 € | 2 largeurs par bloc |
-| Velours côtelé fin roux | Mondial Tissus | 145 cm | 14,99 € | 6,2 m | 9 m² | 92,94 € | 2 largeurs par bloc |
-| Jacquard Peps violet orange | Mondial Tissus | 280 cm | 25,99 € | 4,8 m | 13,4 m² | 124,75 € | tourné d'un quart de tour, sans couture |
-| Jacquard Peps vert rose | Mondial Tissus | 280 cm | 25,99 € | 4,8 m | 13,4 m² | 124,75 € | tourné d'un quart de tour, sans couture |
-| Jacquard Paola orange | Mercerine | 140 cm | 21,80 € | 6,3 m | 8,8 m² | 137,34 € | 2 largeurs par bloc |
-| Jacquard Geofle étoiles cuivrées | Mercerine | 140 cm | 14,90 € | 6,5 m | 9,1 m² | 96,85 € | 2 largeurs par bloc |
+| Vert chiné | — | 140 cm | — | 6 m | 8,4 m² | — | 2 largeurs par bloc |
+| Toile rayée bleu-vert | Tissus Hemmers | 160 cm | 17,09 € | 6 m | 9,6 m² | 102,54 € | 2 largeurs par bloc |
+| Toile rayée Sicilia multicolore | Tissus Hemmers | 160 cm | 17,09 € | 6 m | 9,6 m² | 102,54 € | 2 largeurs par bloc |
+| Velours côtelé fin roux | Mondial Tissus | 145 cm | 14,99 € | 6 m | 8,7 m² | 89,94 € | 2 largeurs par bloc |
+| Jacquard Peps violet orange | Mondial Tissus | 280 cm | 25,99 € | 2,6 m | 7,3 m² | 67,57 € | tourné d'un quart de tour, sans couture |
+| Jacquard Peps vert rose | Mondial Tissus | 280 cm | 25,99 € | 2,6 m | 7,3 m² | 67,57 € | tourné d'un quart de tour, sans couture |
+| Jacquard Paola orange | Mercerine | 140 cm | 21,80 € | 6,1 m | 8,5 m² | 132,98 € | 2 largeurs par bloc |
+| Jacquard Geofle étoiles cuivrées | Mercerine | 140 cm | 14,90 € | 6,3 m | 8,8 m² | 93,87 € | 2 largeurs par bloc |
 | Hollyhocks Spring (House of Hackney) | Etoffe.com | 137 cm | 210,00 € | 10,7 m | 14,7 m² | 2247,00 € | 2 largeurs par bloc |
-| Oia anthracite (Nobilis) | Etoffe.com | 144 cm | 198,00 € | 8 m | 11,5 m² | 1584,00 € | 2 largeurs par bloc |
-| Oia jaune (Nobilis) | Etoffe.com | 144 cm | 198,00 € | 8 m | 11,5 m² | 1584,00 € | 2 largeurs par bloc |
-| Regimen ruggine (Dedar) | Etoffe.com | 315 cm | 344,00 € | 3,1 m | 9,8 m² | 1066,40 € | 1 largeur, sans couture |
-| Regimen carrot stick (Dedar) | Etoffe.com | 315 cm | 344,00 € | 3,1 m | 9,8 m² | 1066,40 € | 1 largeur, sans couture |
-| Almudaina vert (Gastón y Daniela) | Etoffe.com | 140 cm | 87,00 € | 6,2 m | 8,7 m² | 539,40 € | 2 largeurs par bloc |
-| Jacquard rayures bleu | Mondial Tissus | 140 cm | 25,99 € | 6,2 m | 8,7 m² | 161,14 € | 2 largeurs par bloc, rayures dans la longueur |
-| Tissé teint rayures rose vert | Mondial Tissus | 150 cm | 15,99 € | 6,2 m | 9,3 m² | 99,14 € | 2 largeurs par bloc |
-| Cretonne enduite Rhune orange | Mondial Tissus | 155 cm | 16,99 € | 6,2 m | 9,6 m² | 105,34 € | 2 largeurs par bloc |
-| Panama bloc graphique vert | Mondial Tissus | 140 cm | 22,99 € | 6,2 m | 8,7 m² | 142,54 € | 2 largeurs par bloc |
-| Bachette rayure bleu vert jaune | Mondial Tissus | 148 cm | 12,99 € | 6,2 m | 9,2 m² | 80,54 € | 2 largeurs par bloc |
+| Oia anthracite (Nobilis) | Etoffe.com | 144 cm | 198,00 € | 7 m | 10,1 m² | 1386,00 € | 2 largeurs par bloc |
+| Oia jaune (Nobilis) | Etoffe.com | 144 cm | 198,00 € | 7 m | 10,1 m² | 1386,00 € | 2 largeurs par bloc |
+| Regimen ruggine (Dedar) | Etoffe.com | 315 cm | 344,00 € | 3 m | 9,5 m² | 1032,00 € | 1 largeur, sans couture |
+| Regimen carrot stick (Dedar) | Etoffe.com | 315 cm | 344,00 € | 3 m | 9,5 m² | 1032,00 € | 1 largeur, sans couture |
+| Almudaina vert (Gastón y Daniela) | Etoffe.com | 140 cm | 87,00 € | 6 m | 8,4 m² | 522,00 € | 2 largeurs par bloc |
+| Jacquard rayures bleu | Mondial Tissus | 140 cm | 25,99 € | 6 m | 8,4 m² | 155,94 € | 2 largeurs par bloc, rayures dans la longueur |
+| Tissé teint rayures rose vert | Mondial Tissus | 150 cm | 15,99 € | 6 m | 9 m² | 95,94 € | 2 largeurs par bloc |
+| Cretonne enduite Rhune orange | Mondial Tissus | 155 cm | 16,99 € | 6 m | 9,3 m² | 101,94 € | 2 largeurs par bloc |
+| Panama bloc graphique vert | Mondial Tissus | 140 cm | 22,99 € | 6 m | 8,4 m² | 137,94 € | 2 largeurs par bloc |
+| Bachette rayure bleu vert jaune | Mondial Tissus | 148 cm | 12,99 € | 6 m | 8,9 m² | 77,94 € | 2 largeurs par bloc |
 
 ### Détail de chaque tissu
 
@@ -153,22 +148,21 @@ Le métrage à acheter dépasse cette surface : le tissu se vend au mètre dans 
 
 ## 6. Réalisé à part
 
-Les montants et les pieds amovibles du lit sont fabriqués par un ami : ils ne sont pas dans les achats.
+Les montants sont fabriqués par un ami : ils ne sont pas dans les achats.
 
 | Pièce | Qté | Dimensions hors tout | Matière |
 |---|---|---|---|
-| Montant | 2 | 74,5 × 27,3 × 3 cm | Contreplaqué bouleau 30 mm (deux épaisseurs de 15 collées), teinté |
-| Pied amovible du lit | 2 | 29,2 × 4 × 3 cm | Hêtre massif 40 × 30 mm, teinté, patin feutre sous le bout |
+| Montant | 2 | 63,6 × 23,8 × 3 cm | Contreplaqué bouleau 30 mm (deux épaisseurs de 15 collées), teinté |
 
 ## Récapitulatif
 
 | Poste | Montant |
 |---|---|
-| Bois et panneaux | 161,04 € |
-| Quincaillerie | 105,47 € |
-| Mousse | 243,68 € *(estimation)* |
+| Bois et panneaux | 167,54 € |
+| Quincaillerie | 76,28 € |
+| Mousse | 245,02 € *(estimation)* |
 | Ouate | **à remplir** |
 | Tissu | selon le tissu choisi (tableau du § 5) |
-| **Total hors tissu** | 510,19 € + ouate |
+| **Total hors tissu** | 488,84 € + ouate |
 
 Ne sont pas comptés : la colle pour la mousse, les agrafes et le fil, la finition du bois apparent.

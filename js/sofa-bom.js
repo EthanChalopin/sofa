@@ -16,15 +16,12 @@
     plank: { name: 'Planche sapin rabotée 27 × 140 mm, 2,4 m', length: 240, price: 18.90 },
     mdf18: { name: 'Panneau MDF 18 mm, 250 × 122 cm', panel: [250, 122], price: 49.90 },
     mdf10: { name: 'Panneau MDF 10 mm, 250 × 122 cm', panel: [250, 122], price: 44.90 },
-    tube: { name: 'Tube rond acier ø 16 mm, 2 m', length: 200, price: 9.50 },
-    sleeve: { name: 'Tube IRL ø 25 mm, 2 m', length: 200, price: 2.29 },
-    foot: { name: 'Pied conique hêtre, 10 cm', price: 6.88 },
+    foot: { name: 'Pied de meuble hêtre, 5 cm', price: 6.88, estimate: true },   // prix relevé pour le modèle de 10 cm
     bolt: { name: 'Boulon M10 × 120 avec écrou et rondelles', price: 2.50, estimate: true },
-    knob: { name: 'Vis à bouton étoile M8 × 50', price: 2.50, estimate: true },
-    insert: { name: 'Insert fileté M8 à visser dans le bois', price: 0.60, estimate: true }
+    dowel: { name: 'Tourillon / rond de hêtre ø 30 mm, 1 m', length: 100, price: 6.50, estimate: true }
   };
   // Petites fournitures, chiffrées en bloc.
-  var EXTRAS = [{ name: 'Pointes crantées, vis, colliers, chute de hêtre, tourillon ø 12', price: 35, estimate: true }];
+  var EXTRAS = [{ name: 'Pointes crantées, vis, patins feutre', price: 30, estimate: true }];
   var KERF = 0.4;                                         // trait de scie perdu à chaque coupe
   // Mousse : un seul prix relevé, sur le configurateur de matelaspourtous.com, pour une plaque d'épaisseur standard.
   // Les plaques du canapé sont estimées au prorata de leur volume. « minThick » et « maxSide » : limites de la découpe sur mesure.
@@ -130,7 +127,7 @@
   // Chaque ligne donne la sollicitation en pourcentage de la limite admise (100 % = à ne pas dépasser).
   function audit(model) {
     var A = model.audit, g = 9.81, person = 100 * g;
-    var LIMIT = { softwood: 1100, mdf: 900, plywood: 1500, plywoodBearing: 1500, steel: 23500 };   // N/cm² ; contreplaqué bouleau en flexion : environ le tiers de sa résistance
+    var LIMIT = { softwood: 1100, mdf: 900, plywood: 1500, plywoodBearing: 1500, hardwood: 1500 };   // N/cm² ; contreplaqué bouleau et hêtre en flexion : environ le tiers de leur résistance
     var E_SOFT = 0.9e6, E_MDF = 0.3e6;
     var W = A.beamT * A.beamH * A.beamH / 6, I = A.beamT * Math.pow(A.beamH, 3) / 12;
     var rows = [];
@@ -150,24 +147,30 @@
         '80 kg au milieu des ' + fr(A.backSpan) + ' cm, flèche ' + Math.round(onBack * Math.pow(A.backSpan, 3) / (48 * E_SOFT * Ib) * 10) + ' mm');
 
     var moment = 3 * 250 * 50 * 0.6;                      // 3 personnes adossées, 60 % de l'effort sur un côté
-    var onCam = moment / A.lever, onBolt = onCam + 3 * 250 * 0.6, D = 2 * A.barR, d = D - 0.2;
-    row('Tube de commande', onCam * (A.camT / 2) / (Math.PI * (Math.pow(D, 4) - Math.pow(d, 4)) / (32 * D)), LIMIT.steel,
-        'paroi de 1 mm, effort ' + Math.round(onCam) + ' N sur le taquet');
+    var onStop = moment / A.stopArm, onBolt = onStop + 3 * 250 * 0.6, D = 2 * A.stopR;
+    // La butée sort du flanc en console ; le montant appuie au milieu de son épaisseur.
+    row('Butée, en flexion', onStop * (A.stopOut / 2) / (Math.PI * Math.pow(D, 3) / 32), LIMIT.hardwood,
+        'hêtre ø ' + fr(D * 10) + ' mm, effort ' + Math.round(onStop) + ' N, à ' + fr(A.stopArm) + ' cm du pivot');
     row('Boulon de pivot, dans le montant', onBolt / A.uprightT, LIMIT.plywoodBearing, 'M10, effort ' + Math.round(onBolt) + ' N');
 
-    // Bascule du lit : 100 kg assis au bord avant du dossier rabattu. Le dossier pose au sol par les pieds amovibles,
-    // près du bord. Ce qui dépasse devant eux tirerait le pivot vers le haut ; seul le poids du bloc d'assise le
-    // retient, autour de ses pieds avant comme de ses pieds arrière.
+    // Bascule du lit : 100 kg assis au bord avant du dossier rabattu. Le dossier pose au sol par la pointe des accoudoirs.
+    // Ce qui dépasse devant elle tire le pivot vers le haut ; seul le poids du bloc d'assise le retient, autour de ses
+    // pieds avant comme de ses pieds arrière.
     var B = A.bed, seatM = mass(model, 'base'), backM = mass(model, 'back');
     var lift = Math.max(0, (100 * (B.leg - (B.edge + 3)) + backM.kg * (B.leg - backM.d)) / (B.pivot - B.leg));
     var tip = Math.max(lift * (B.pivot - B.frontLeg) / (seatM.d - B.frontLeg), lift * (B.rearLeg - B.pivot) / (B.rearLeg - seatM.d));
-    row('Bascule du lit', tip, seatM.kg, '100 kg au bord avant, pieds amovibles à ' + fr(B.leg - B.edge) + ' cm du bord ; ' +
+    row('Bascule du lit', tip, seatM.kg, '100 kg au bord avant, accoudoirs au sol à ' + fr(B.leg - B.edge) + ' cm du bord ; ' +
         'bloc d\'assise ' + Math.round(seatM.kg) + ' kg, dossier ' + Math.round(backM.kg) + ' kg (estimés)');
-    // Une personne de 100 kg à un bout du lit, juste au-dessus d'un pied, le charge presque seule (plus la moitié du dossier).
-    // Le pied la transmet au montant par ses vis, qui appuient dans le hêtre du pied.
-    var onSupport = (100 + backM.kg / 2) * g, L = A.bedLeg;
-    row('Pied amovible, vis à bouton', onSupport / L.screws / (L.boltD * L.t), LIMIT.plywoodBearing,
-        L.screws + ' vis M8 ; ' + Math.round(onSupport) + ' N sur le pied');
+    // Accoudoirs en lit : dans le même cas, le sol les repousse de tout ce que le dossier et la personne pèsent devant le
+    // pivot. Chaque branche porte la moitié de cette réaction, qui la fait fléchir d'autant plus que la pointe est loin,
+    // à l'horizontale, de la section considérée (le contreplaqué travaille sur son chant, 3 cm d'épaisseur).
+    var onFeet = (100 * (B.pivot - (B.edge + 3)) + backM.kg * (B.pivot - backM.d)) / (B.pivot - B.leg) * g / 2, R = A.arm, worst = 0, at = 0;
+    R.t.forEach(function (t, i) {
+      var s = onFeet * Math.abs(t - R.tip) / (A.uprightT * R.width[i] * R.width[i] / 6);
+      if (s > worst) { worst = s; at = i; }
+    });
+    row('Accoudoir en lit, en flexion', worst, LIMIT.plywood, Math.round(onFeet) + ' N par pointe ; branche de ' + fr(R.width[at]) +
+        ' cm, à ' + fr(Math.abs(R.t[at] - R.tip)) + ' cm de la pointe');
     return rows;
   }
 

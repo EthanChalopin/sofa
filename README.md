@@ -47,29 +47,27 @@ Chaque cote affichée porte sa source : `v` vendeur, `p` estimée sur photo, `h`
 
 ## Le canapé, tel qu'il est modélisé
 
-- **Deux blocs** garnis, assise et dossier. Les montants en Y, les accoudoirs et le taquet restent en bois apparent.
-- **Trois positions** : canapé (dossier à 23,7°), détente (31,7°), lit.
-- **Mécanisme** : le dossier pivote sur deux boulons. Un tube d'acier traversant porte à chaque bout un taquet
-  en bois à deux positions (nez = position droite, flanc = détente) et un levier. En lit, le dossier bascule
-  vers l'avant ; son bord pose au sol par deux pieds qu'on visse au montant, les accoudoirs restent au-dessus du sol.
-- **Montants** : en contreplaqué 30 mm, en branches. La queue part du boulon, droite (le taquet appuie dessus), et
+- **Deux blocs** garnis, assise et dossier. Les montants, les accoudoirs et les butées restent en bois apparent.
+- **Deux positions** : canapé (dossier à 23,7°) et lit.
+- **Mécanisme** : celui de l'original, simplifié. Le dossier et ses deux montants pivotent sur deux boulons. En
+  canapé, la queue de chaque montant repose sur une **butée** fixe, un tourillon de hêtre ø 30 mm collé dans le flanc,
+  à 15 cm du pivot. Pour faire le lit, on bascule le dossier vers l'avant : la queue quitte la butée et la pointe des
+  accoudoirs pose au sol, à 19 cm du bord du lit. Ils servent de pieds au lit.
+- **Montants** : en contreplaqué 30 mm, en branches. La queue part du boulon, droite (elle repose sur la butée), et
   rejoint la tige vissée au dossier, qui s'arrête en demi-cercle 12 cm sous son haut (`MOD.upright.below`). De la
-  tige se détache, haut, l'accoudoir : une branche courbe de 6,5 à 4 cm de large, qui descend vers l'avant puis file
-  à plat, au niveau de l'assise, jusqu'à une pointe arrondie. Entre la branche et le tronc, le montant est évidé ; le
-  creux finit par un trou de 30 mm (scie cloche).
-- **Pieds du lit, amovibles** : un pied en hêtre par côté, qu'on visse en position lit sur l'extérieur du haut du
-  montant, par deux vis à bouton dans deux inserts filetés. Il descend droit au sol, à 18 cm du bord du lit. En canapé on
-  les dévisse et on les range : rien ne dépasse du montant.
+  tige se détache l'accoudoir : une branche courbe de 6,5 à 4 cm de large, qui monte en biais vers l'avant comme le
+  bras en Y de l'original, jusqu'à une pointe arrondie. Entre la branche et le tronc, le montant est évidé ; le creux
+  finit par un trou de 30 mm (scie cloche). En lit, la branche est presque verticale : elle porte le lit en compression.
 - **Structure** : chevrons de sapin 50 × 70 mm, plateau et peaux en MDF cloué, mousse (16 cm à l'assise ;
   au dossier, 10 cm côté assise et 5 cm côté couchage, autour d'un cadre de 7 cm), ouate et tissu.
-- **Cotes** : 202 × 97,5 × 90,4 cm en canapé, assise à 35,8 cm, accoudoir à plat à 41,8 cm du sol (6 cm
-  au-dessus de l'assise), dossier fini de
-  43 × 24 cm, bloc d'assise de 75 cm, 106,5 cm de profondeur en détente, lit de 120 cm.
-- **Achats de structure** : 267 € (214 € relevés chez Leroy Merlin, 52 € de quincaillerie estimés).
-- **Mousse** : 244 € estimés (HD 40 kg/m³ très ferme chez Matelas pour tous, hors frais de port).
+- **Cotes** : 202 × 91,5 × 76,7 cm en canapé, assise à 30,8 cm sur des pieds de 5 cm, accoudoir de 54,7 cm (départ)
+  à 63,2 cm du sol (pointe), dossier fini de 33 × 24 cm, jour de 6 à 15,7 cm sous le dossier, bloc d'assise de 85 cm, lit de 120 cm.
+- **Achats de structure** : 244 € (161 € relevés chez Leroy Merlin, 83 € estimés, dont les pieds de 5 cm : prix
+  du modèle de 10 cm en attendant un relevé).
+- **Mousse** : 245 € estimés (HD 40 kg/m³ très ferme chez Matelas pour tous, hors frais de port).
 
 La page propose quatre rendus, dans l'ordre de fabrication (structure, MDF, mousse, habillé), et dix-neuf tissus.
-Un mannequin de 1,80 m (bouton « Mannequin ») s'assoit contre le dossier, dont il suit l'inclinaison, ou se couche
+Un mannequin de 1,80 m (bouton « Mannequin ») s'assoit contre le dossier ou se couche
 sur le lit en chien de fusil.
 
 ## Décisions prises par Ethan
@@ -77,7 +75,9 @@ sur le lit en chien de fusil.
 À respecter, sauf demande contraire de sa part :
 
 - **Simple et robuste** avant tout : le moins de pièces et de réglages possible.
-- Changement d'inclinaison par **barre à taquets** (les butées à ressorts et cordelettes ont été écartées).
+- **Mécanisme de l'original, sans position détente** (19 novembre 2026) : la barre à taquets, ses leviers, son
+  fourreau, le pion de fin de course et les pieds amovibles du lit ont été retirés. Le montant repose sur une butée
+  fixe en canapé, et sur la pointe des accoudoirs en lit. Point de départ simple, à ajuster.
 - **Dossier d'un seul bloc rigide et banquette fixe** (le rabat articulé et le nez en mousse ont été écartés).
   Conséquences acceptées : un lit moins profond que l'original et un jour sous le dossier en position assise.
 - **MDF cloué, pas collé** : le cadre du dossier porte donc seul, d'où ses chevrons posés à plat.
@@ -86,40 +86,38 @@ sur le lit en chien de fusil.
   couchage (au lieu de 3 + 5). Ethan voulait 10 + 10 : impossible avec cette assise, car en lit le dossier
   se couche devant elle, à sa hauteur ; épais de 29 cm, il ne laisserait que 5 cm de manchette et mettrait
   le boulon de pivot au ras du dessous du cadre. Conséquences du 10 + 5 : assise à 35,8 cm du sol,
-  manchettes de 11 cm. Trois réglages en découlent, à ne pas défaire :
+  manchettes de 11 cm (l'assise est depuis descendue de 5 cm avec les pieds). Deux réglages en découlent, à ne pas défaire :
   - le coin avant-haut des flancs et des renforts est abattu de 5 cm (`MOD.frame.nose`), sans quoi le bas
     du dossier les touche en basculant vers le lit ;
-  - le taquet est éloigné du pivot (`MOD.cam.t` = 18) pour que le tube passe au-dessus du plateau ;
   - le haut du montant (la tige) affleure l'arrière du cadre du dossier, où il est vissé.
-- **Accoudoirs bas, pieds du lit amovibles, dossier haut** (18 novembre 2026). Les accoudoirs ne servent plus de
-  pieds : en lit, ils restent au-dessus du sol. Le bord du lit est porté par
-  **deux pieds amovibles** (`MOD.bedLeg`), vissés au montant par des vis à bouton en position lit, rangés en
-  canapé. Sans eux, l'assise se soulèverait quand on s'assoit au bord du lit ; avec eux, la bascule tombe à 48 % de la limite (0 % tant qu'ils étaient au bord ; ils ont reculé de 12 cm
-  avec la tige raccourcie).
-  Cela a permis de **rehausser le dossier de 10 cm** (43 cm au lieu de 33) et de **raccourcir d'autant le bloc
-  d'assise** (75 cm au lieu de 85, `MOD.seatDepth`), par l'arrière : le lit garde 120 cm et la profondeur
-  utile pour s'asseoir ne change pas. Conséquence acceptée : en canapé, le bas du dossier dépasse de 3,2 cm
-  derrière le bloc d'assise.
-- **Accoudoir en branche** (18 novembre 2026, d'après les croquis d'Ethan) : la manchette rapportée est supprimée,
-  la tige est raccourcie et arrondie, et l'accoudoir est une branche courbe (`MOD.upright.branch`).
-  Le 19 novembre, elle a été remontée : elle quitte la tige plus haut et file à plat au niveau de l'assise, comme
-  sur le second croquis. Sa longueur vers l'avant est limitée par le lit : en lit, la pointe passe à 1,5 cm du sol
-  (`MOD.upright.clear`). Largeur hors tout : 202 cm (205 cm avec les leviers).
-- **Détente à +8°** (`MOD.extraLean`, au lieu de +12°), pour réduire le jour sous le dossier : 5,6 cm à
-  l'arrière et 15,3 cm à l'avant en canapé, 0 à 12,6 cm en détente. Ce réglage abaisse le pivot : il a fallu
-  1 cm de mousse de plus à l'assise (16 au lieu des 15 voulus) pour garder du bois autour du boulon.
-- **Les montants et les pieds du lit sont réalisés par un ami** : ils ne figurent
-  pas dans les achats (leurs vis à bouton et leurs inserts, si).
+- **Lit stable sur les accoudoirs** (19 novembre 2026) : les proportions de l'original sont revenues, **bloc
+  d'assise de 85 cm et dossier de 33 cm** (`MOD.seatDepth`), lit toujours à 120 cm. Avec le dossier de 43 cm et
+  l'accoudoir bas, la pointe touchait le sol à 59 cm du bord : quelqu'un assis au bord du lit soulevait l'assise
+  (bascule à 623 %) et la branche pliait (163 %). La pointe d'un accoudoir sert de pied : sa hauteur en canapé fixe
+  sa distance au bord du lit. Elle est donc remontée (`MOD.upright.branch.tip` = 55 cm du pivot) : pied à 20 cm du
+  bord, bascule à 66 %, branche à 7 %. Conséquence : l'accoudoir est haut (54,7 à 63,2 cm du sol avec les pieds
+  de 5 cm). Un dossier
+  plus court (assise plus profonde) permettrait un accoudoir plus bas, au prix d'un dossier plus bas encore.
+- **Pieds de 5 cm** (19 novembre 2026, au lieu de 10, `MOD.cover.bottom`) : tout le canapé descend de 5 cm, assise
+  à 30,8 cm. Le pivot descend aussi (8,3 cm du sol) et reste en plein bois du flanc.
+- **Accoudoir en branche** (18 et 19 novembre 2026, d'après les croquis d'Ethan) : la manchette rapportée est
+  supprimée, la tige est raccourcie et arrondie, et l'accoudoir est une branche courbe (`MOD.upright.branch`).
+  Largeur hors tout : 202 cm.
+- **Jour sous le dossier de 6 cm** à l'arrière en canapé (`MOD.backGap`) : il fixe la hauteur du pivot. Sans lui le
+  pivot descendrait à 6,1 cm du sol, au ras du bas du flanc (5 cm) ; à 6 cm il est à 8,3 cm, en plein bois.
+- **Les montants sont réalisés par un ami** : ils ne figurent pas dans les achats.
 
 ## Ce qui est sûr, ce qui ne l'est pas
 
-- **Géométrie** : vérifiée par calcul (`tools/verif.js`), dans les trois positions et pendant les bascules.
+- **Géométrie** : vérifiée par calcul (`tools/verif.js`), dans les deux positions et pendant la bascule.
 - **Solidité** : estimations par formules de poutre simples, pas des essais. Les assemblages (vis, pointes,
   colle) ne sont pas calculés. Pièces les plus chargées : le cadre du dossier en lit (60 %), le longeron d'assise
-  (48 %), le tube de commande (42 %). Bascule du lit : 48 % avec les pieds amovibles (masses du bloc d'assise et
-  du dossier estimées d'après le volume des pièces).
-- **À essayer sur maquette avant tout** : la tenue des pieds du lit (deux vis à bouton à 3,3 cm d'entraxe), et le retour
-  du taquet par le seul poids du levier.
+  (48 %), la butée (63 %).
+- **Bascule du lit : 63 %** de la limite, 100 kg assis au bord (masses estimées d'après le volume des pièces :
+  50 kg pour le bloc d'assise, 22 kg pour le dossier). Les accoudoirs reçoivent alors 745 N chacun, presque dans
+  leur axe (flexion à 10 %).
+- **À essayer sur maquette avant tout** : la tenue de la butée (un tourillon en console, 1 660 N par côté quand trois
+  personnes s'adossent) et la stabilité du lit, assis au bord.
 - **Prix** : relevés sur les sites des vendeurs les 5 et 6 octobre 2026, à vérifier. Certains tissus étaient
   presque épuisés (voir leurs remarques dans `js/fabrics.js`).
 - **Tissus** : plusieurs échelles de motif sont estimées, faute de règle sur la photo ; c'est indiqué pour
@@ -127,13 +125,13 @@ sur le lit en chien de fusil.
 - **Mousse** : prix estimé au prorata du volume, à partir d'un seul prix relevé sur matelaspourtous.com le
   10 octobre 2026 (274 € la plaque de 200 × 100 × 20 cm). À confirmer plaque par plaque dans le configurateur
   du site ; hors de ses épaisseurs standard, compter 43 % de plus.
-- **Non chiffrés** : la ouate (surface connue, fournisseur et prix à remplir), les montants et les pieds du lit.
+- **Non chiffrés** : la ouate (surface connue, fournisseur et prix à remplir), les montants.
 
 ## État du dépôt
 
 - Tout le travail est sur `main`, poussé sur GitHub. Les branches `habillage-blocs` et `tissu` y sont fusionnées.
 - Le dépôt GitHub est public. `tissus/` et `reference/` contiennent des photos de vendeurs.
-- `proposition-mecanisme.png` est périmé : il montre un ancien taquet à manche.
+- `proposition-mecanisme.png` est périmé : il montre un ancien taquet à manche, abandonné depuis.
 
 ## Pour modifier
 

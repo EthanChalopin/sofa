@@ -4,7 +4,7 @@
  *   node tools/verif.js                 avec la longueur du modèle (MOD.width)
  *   node tools/verif.js --largeur=180   pour une autre longueur de canapé
  *
- * Tout se joue de profil : le montant, le taquet et le dossier garni sont ramenés à
+ * Tout se joue de profil : le montant, la butée et le dossier garni sont ramenés à
  * leur contour dans le plan (d, hauteur), puis comparés dans chaque position et pendant les bascules.
  * Le code de sortie est 1 si un contrôle échoue.
  */
@@ -34,7 +34,6 @@ function boxOutline(s) {
 function placed(outline, pivot) { return function (a) { return outline.map(function (p) { return turn(pivot, p, a); }); }; }
 
 var upright = placed(part('upright').shapes[0].pts, m.pivot.back);
-var cam = placed(part('cam').shapes[0].pts, m.pivot.cam);
 var back = placed(boxOutline(part('backCover').shapes[0]), m.pivot.back);
 var panel = part('panel').shapes[0].pts.map(function (p) { return [half - p[0], p[1]]; });
 
@@ -80,7 +79,7 @@ function lowest(poly) { return Math.min.apply(null, poly.map(function (p) { retu
 function highest(poly) { return Math.max.apply(null, poly.map(function (p) { return p[1]; })); }
 function deepest(poly) { return Math.max.apply(null, poly.map(function (p) { return p[0]; })); }
 
-var A = m.angle, C = m.cam;
+var A = m.angle;
 var seatTop = m.overall.bed.max[1];                        // dessus fini de l'assise
 var seatFront = half - m.overall.sofa.max[2];              // face avant finie du bloc d'assise (distance d)
 var panelTop = highest(panel);
@@ -95,27 +94,26 @@ function clear(g) { return g >= -TOL; }
 
 console.log('Canapé de ' + m.width + ' cm — contrôle du mécanisme (tolérance ' + cm(TOL) + ')');
 
-var g = gap(cam(C.engaged), upright(A.sofa));
-check('Position droite : le montant repose sur le nez du taquet', touches(g), 'jeu ' + cm(g));
-g = gap(cam(C.retracted), upright(A.lounge));
-check('Position détente : le montant repose sur le flanc du taquet', touches(g), 'jeu ' + cm(g));
-g = sweep(C.engaged, C.retracted, 80, function (c) { return gap(cam(c), upright(A.lift)); });
-check('Dossier soulagé : le taquet tourne sans toucher le montant', g > 0, 'jeu mini ' + cm(g));
-g = Math.min.apply(null, C.follow.map(function (f) { return gap(cam(f[1]), upright(f[0])); }));
-check('Retour : le taquet suit le montant sans le pénétrer', clear(g), 'jeu mini ' + cm(g));
-g = sweep(A.sofa, A.bed, 300, function (a) { return gap(cam(C.engaged), upright(a)); });
-check('Bascule vers le lit, taquet relevé : aucun contact', clear(g), 'jeu mini ' + cm(g));
+// La butée est dans le plan du montant : il repose dessus en canapé, et la quitte en basculant vers le lit.
+var stopS = part('stop').shapes.filter(function (s) { return s.x1 > 0; })[0], stopPt = [half - stopS.z, stopS.y];
+var g = distance(stopPt, upright(A.sofa)) - stopS.r;
+check('Canapé : le montant repose sur la butée', touches(g), 'jeu ' + cm(g));
+// On part d'un cran après la position canapé, où le montant touche la butée.
+g = sweep(A.sofa + (A.bed - A.sofa) / 400, A.bed, 399, function (a) { return distance(stopPt, upright(a)) - stopS.r; });
+check('Bascule : le montant quitte la butée sans passer dessus', g > 0, 'jeu mini ' + cm(g));
+g = Math.min(-distance(stopPt, panel), panelTop - stopPt[1]) - stopS.r;
+check('La butée est en plein bois du flanc', g >= 1.5, 'bois autour ' + cm(g));
+g = Math.hypot(stopPt[0] - (half - m.pivot.back.z), stopPt[1] - m.pivot.back.y) - stopS.r - Sofa.EST.pivot.r;
+check('La butée est loin du boulon de pivot', g >= 3, 'bois entre les deux ' + cm(g));
 
-g = lowest(back(A.lounge)) - seatTop;
-check('Détente : le bas du dossier affleure l\'assise', touches(g), 'écart ' + cm(g));
-g = lowest(back(A.sofa)) - seatTop;
-check('Position droite : le dossier est au-dessus de l\'assise', g > 0, 'jour ' + cm(g));
+var backLowCanape = lowest(back(A.sofa)) - seatTop;
+check('Canapé : le dossier est au-dessus de l\'assise', backLowCanape > 0, 'jour ' + cm(backLowCanape));
 g = highest(back(A.bed)) - seatTop;
 check('Lit : le dossier rabattu est au niveau de l\'assise', touches(g), 'écart ' + cm(g));
 g = seatFront - deepest(back(A.bed));
 check('Lit : le dossier vient contre le bloc d\'assise', touches(g), 'écart ' + cm(g));
 g = lowest(upright(A.bed));
-check('Lit : le montant reste au-dessus du sol', g > 0.5, 'à ' + cm(g) + ' du sol');
+check('Lit : la pointe des accoudoirs pose au sol', touches(g), 'hauteur ' + cm(g));
 // Le contour du montant, fait de courbes raccordées, ne doit pas se recouper (une pièce qu'on peut découper).
 var outline = part('upright').shapes[0].pts, crossings = 0;
 function cross(a, b, c, d) {
@@ -129,14 +127,10 @@ outline.forEach(function (a, i) {
   }
 });
 check('Le contour du montant ne se recoupe pas', crossings === 0, crossings + ' croisement(s)');
-// Le pion de fin de course est dans le plan du montant : celui-ci ne doit jamais passer dessus.
-var pinS = part('pin').shapes[0], pinPt = [half - pinS.z, pinS.y];
-g = sweep(A.lounge, A.bed, 400, function (a) { return distance(pinPt, upright(a)) - pinS.r; });
-check('Bascule : le montant ne touche pas le pion de fin de course', clear(g), 'jeu mini ' + cm(g));
 
-// Pendant toute la course, le dossier garni ne doit pas entrer dans les flancs en bois.
+// Pendant toute la bascule, le dossier garni ne doit pas entrer dans les flancs en bois.
 function intoPanels(outline) {
-  return sweep(A.lounge, A.bed, 400, function (a) {
+  return sweep(A.sofa, A.bed, 400, function (a) {
     var worst = Infinity;
     sampled(outline(a), 0.5).forEach(function (p) { worst = Math.min(worst, distance(p, panel)); });
     return worst;
@@ -144,57 +138,25 @@ function intoPanels(outline) {
 }
 g = intoPanels(back);
 check('Bascule : le dossier ne touche pas les flancs en bois', clear(g), 'jeu mini ' + cm(g));
-// Le montant balaie tout ce qui se trouve dans son épaisseur (en x) : flanc, bloc d'assise garni, taquet et levier.
-// Chaque obstacle n'est contrôlé que s'il est dans cette épaisseur.
+// Le montant balaie tout ce qui se trouve dans son épaisseur (en x). Chaque obstacle n'est contrôlé que s'il y est.
 function xSpan(id) {
   return part(id).shapes.map(function (s) {                 // la pièce du côté x > 0
     return s.x0 !== undefined ? [s.x0, s.x1] : [s.center[0] - s.size[0] / 2, s.center[0] + s.size[0] / 2];
   }).sort(function (a, b) { return b[1] - a[1]; })[0];
 }
 function sharesX(id, other) { var a = xSpan(other || 'upright'), b = xSpan(id); return Math.min(a[1], b[1]) - Math.max(a[0], b[0]) > 0; }
-var lever = placed(part('lever').shapes[0].pts, m.pivot.cam);
 var seatBlock = boxOutline(part('seatCover').shapes[0]).map(function (p) { return [half - p[0], p[1]]; });
-// Le bloc d'assise est raccourci par l'arrière : en canapé, le bas du dossier peut dépasser derrière lui (choix assumé).
 var backLow = back(A.sofa).reduce(function (lo, p) { return p[1] < lo[1] ? p : lo; });
 g = backLow[0] - deepest(seatBlock);
 console.log('  —      ' + 'Canapé : le bas du dossier dépasse derrière le bloc d\'assise'.padEnd(62) + (g > 0 ? cm(g) : 'non'));
-[['panel', 'le flanc en bois', function () { return panel; }],
- ['seatCover', 'le bloc d\'assise garni', function () { return seatBlock; }],
- ['cam', 'le taquet', function (a) { return cam(a > A.sofa ? C.engaged : C.retracted); }],
- ['lever', 'le levier', function (a) { return lever(a > A.sofa ? C.engaged : C.retracted); }]].forEach(function (o) {
+[['panel', 'le flanc en bois', panel], ['seatCover', 'le bloc d\'assise garni', seatBlock]].forEach(function (o) {
   if (!sharesX(o[0])) { console.log('  —      ' + ('Montant et ' + o[1] + ' : pas dans le même plan').padEnd(62)); return; }
-  g = sweep(A.lounge, A.bed, 400, function (a) {
-    var obstacle = o[2](a);
-    return Math.min.apply(null, sampled(upright(a), 0.3).map(function (p) { return distance(p, obstacle); }));
+  g = sweep(A.sofa, A.bed, 400, function (a) {
+    return Math.min.apply(null, sampled(upright(a), 0.3).map(function (p) { return distance(p, o[2]); }));
   });
   check('Bascule : le montant ne touche pas ' + o[1], clear(g), 'jeu mini ' + cm(g));
 });
-// Pieds amovibles : vissés au montant en position lit seulement.
-var bedLeg = placed(part('bedLeg').shapes[0].pts, m.pivot.back)(A.bed);
-g = lowest(bedLeg);
-check('Lit : les pieds amovibles touchent le sol', touches(g), 'hauteur ' + cm(g));
-var INSERT = 0.65;                                        // rayon extérieur d'un insert M8
-g = Math.min.apply(null, part('legScrew').shapes.filter(function (s) { return s.x1 > 0; }).map(function (s) {
-  return -distance([s.z, s.y], part('upright').shapes[0].pts) - INSERT;
-}));
-check('Les inserts des pieds sont en plein bois du montant', g >= 0.8, 'bois autour ' + cm(g));
-var right = function (s) { return s.x1 > 0; };
-g = Math.min.apply(null, part('legScrew').shapes.filter(right).map(function (a) {
-  return Math.min.apply(null, part('screw').shapes.filter(right).map(function (b) { return Math.hypot(a.y - b.y, a.z - b.z); }));
-}));
-check('Les inserts des pieds sont loin des vis du dossier', g >= 2, 'entraxe mini ' + cm(g));
-[['lever', 'le levier', function () { return lever(C.engaged); }],
- ['cam', 'le taquet', function () { return cam(C.engaged); }]].forEach(function (o) {
-  if (!sharesX(o[0], 'bedLeg')) { console.log('  —      ' + ('Pieds amovibles et ' + o[1] + ' : pas dans le même plan').padEnd(62)); return; }
-  g = gap(bedLeg, o[2]());
-  check('Lit : les pieds amovibles ne touchent pas ' + o[1], clear(g), 'jeu ' + cm(g));
-});
 
-g = panelTop - (m.pivot.cam.y + Sofa.MOD.bar.r);
-check('Le tube de commande passe sous le haut des flancs', g > 0, 'marge ' + cm(g));
-var foamBase = part('seatFoam').shapes[0];                 // le bas de la mousse d'assise repose sur le plateau
-g = m.pivot.cam.y - Sofa.MOD.bar.sleeve - (foamBase.center[1] - foamBase.size[1] / 2);
-check('Le fourreau du tube passe au-dessus du plateau', g >= 0, 'marge ' + cm(g));
 // Les vis des montants doivent prendre dans le cadre du dossier, à distance des chants du montant et du cadre.
 var T = m.stem;
 g = Math.min(T.screw - Math.max(T.front, T.frame[0]), Math.min(T.rear, T.frame[1]) - T.screw);

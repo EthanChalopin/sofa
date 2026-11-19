@@ -1,18 +1,15 @@
 /*
- * Modèle paramétrique du canapé convertible, d'après OPP Dřevovýroba (Tchécoslovaquie, années 1970),
- * avec une modification personnelle : une seconde inclinaison du dossier (position « détente »),
- * obtenue par une barre traversante qui porte un taquet à deux positions à chaque bout.
+ * Modèle paramétrique du canapé convertible, d'après OPP Dřevovýroba (Tchécoslovaquie, années 1970).
+ * Mécanisme de l'original, simplifié : le dossier et ses deux montants pivotent sur deux boulons ; en canapé
+ * la queue du montant repose sur une butée fixe, en lit la pointe des accoudoirs pose au sol.
  *
  * Unités : centimètres.
  * Repère : x = largeur (0 au centre), y = hauteur depuis le sol, z = profondeur (positif vers l'avant).
  * « d » désigne une distance mesurée depuis le nez (avant) des panneaux latéraux, vers l'arrière.
  *
- * Deux ensembles tournent autour d'un axe parallèle à x :
- *   - « back » : le dossier et ses deux montants, autour des boulons de pivot.
- *     Repère : t = distance au pivot le long du dossier, p = distance au pivot perpendiculairement
- *     au dossier (positif vers la face arrière du dossier).
- *   - « cam » : la barre et ses deux taquets, autour de l'axe de la barre.
- *     Repère : u = le long du taquet (positif vers le nez), v = en travers (positif du côté du manche).
+ * Un ensemble tourne autour d'un axe parallèle à x : « back », le dossier et ses deux montants, autour
+ * des boulons de pivot. Repère : t = distance au pivot le long du dossier, p = distance au pivot
+ * perpendiculairement au dossier (positif vers la face arrière du dossier).
  *
  * Lecture des cotes vendeur : les 87 cm incluent le débord des coussins à l'arrière,
  * les 131 cm vont de l'arrière des panneaux au bord du dossier rabattu.
@@ -54,34 +51,28 @@
     screw: { r: 0.6 }
   };
 
-  // Modification personnelle : position « détente ». Cotes de conception, à valider à l'atelier.
+  // Choix de conception d'Ethan. Cotes à valider à l'atelier.
   var MOD = {
     width: 196,                                           // LONGUEUR DU CANAPÉ : celle des deux blocs, entre les montants. Tout le reste suit.
-    extraLean: 8,                                         // degrés d'inclinaison en plus
-    // PROFONDEUR DU BLOC D'ASSISE (85 sur l'original). On ne la raccourcit que par l'arrière : la profondeur utile pour
-    // s'asseoir (de l'avant au dossier) ne change pas. En dessous de 80, le bas du dossier dépasse derrière le bloc en canapé.
-    seatDepth: 75,
-    // PROFONDEUR DU LIT : avec la profondeur du bloc d'assise, elle fixe la hauteur du dossier. Le bord du lit est porté
-    // par les pieds amovibles : sa longueur ne fait plus basculer l'assise.
+    // PROFONDEUR DU BLOC D'ASSISE (85, comme l'original). Avec la profondeur du lit, elle fixe la hauteur du dossier :
+    // un dossier plus haut dépasse davantage devant les accoudoirs en lit, et le lit bascule quand on s'assoit au bord.
+    seatDepth: 85,
+    // PROFONDEUR DU LIT, du bord du dossier rabattu à l'arrière du bloc d'assise.
     bedDepth: 120,
-    cam: {
-      t: 18,                                           // où le taquet touche la queue du montant (distance au pivot) ; règle la hauteur du tube
-      flank: 2,                                           // de l'axe au flanc : appui en position détente
-      heel: 4.5,                                          // de l'axe au talon
-      thick: 3                                            // même épaisseur que le montant qu'il porte
-    },
-    lever: { length: 15, hub: 2.75, tip: 1.5, t: 1.5 },   // levier de commande, contre le taquet
-    bar: { r: 0.8, sleeve: 1.25 },                        // tube d'acier ø 16 de 2 m, dans un fourreau ø 25 à la traversée de la mousse
-    pin: { r: 0.6 },                                      // pion de fin de course
-    liftMargin: 0.3,                                      // degrés de marge pour dégager le taquet
-    bedLeg: { w: 4, t: 3, fromTop: 5, edge: 1.6 },   // pieds amovibles du lit : largeur, épaisseur, axe sous le haut de la tige, vis à cette distance des chants de la tige
-    // Montant : stem, largeur de la tige ; below, la tige s'arrête, arrondie, à cette distance sous le haut du dossier ; clear, garde
-    // au sol de la pointe de l'accoudoir, en lit. branch : l'accoudoir, une branche qui part de la tige à « from » de sa hauteur,
-    // la quitte vers l'avant à « angle » degrés et finit en pointe de rayon tipR, à « tip » du pivot le long du dossier ; elle y
-    // arrive en descendant de « slope » degrés en position droite (0 : à plat) ; leave et arrive règlent sa courbure au départ
-    // et à la pointe ; le creux entre la branche et le tronc finit en demi-cercle de rayon notch.
-    upright: { stem: 6.5, below: 12, clear: 1.5, branch: { from: 0.7, angle: 50, tip: 26, tipR: 2, slope: 0, leave: 0.25, arrive: 0.45, notch: 1.5 } },
-    seat: { foam: 16 },                                   // plaque de mousse de l'assise, posée sur le plateau ; le tube de commande passe dans son épaisseur
+    // JOUR SOUS LE DOSSIER : en canapé, entre l'assise et l'arête arrière du bas du dossier. Plus il est grand, plus le
+    // pivot remonte ; il doit rester en plein bois du flanc (contrôlé par tools/verif.js).
+    backGap: 6,
+    stop: { r: 1.5, wood: 2 },                            // butée : rayon du tourillon ; bois laissé au-dessus, sous le chant du flanc
+    // Montant : stem, largeur de la tige ; below, la tige s'arrête, arrondie, à cette distance sous le haut du dossier.
+    // branch : l'accoudoir, une branche qui part de la tige à « from » de sa hauteur et la quitte vers l'avant en faisant
+    // « angle » degrés avec elle (90 : perpendiculaire ; au-delà, elle monte). Elle finit en pointe de rayon tipR, à « tip »
+    // du pivot le long du dossier, où elle arrive en descendant de « slope » degrés en position canapé (négatif : elle
+    // monte vers l'avant) ; leave et arrive règlent sa courbure au départ et à la pointe ; le creux entre la branche et
+    // le tronc finit en demi-cercle de rayon notch.
+    // En lit, la pointe pose au sol : « tip » fixe à la fois la hauteur de l'accoudoir en canapé et la distance entre ce
+    // pied et le bord du lit, donc la stabilité du lit (bascule, dans tools/debit.js).
+    upright: { stem: 6.5, below: 12, branch: { from: 0.45, angle: 115, tip: 55, tipR: 2, slope: -15, leave: 0.3, arrive: 0.3, notch: 1.5 } },
+    seat: { foam: 16 },                                   // plaque de mousse de l'assise, posée sur le plateau
     // Dossier : un cadre de chevrons posés à plat, une peau de MDF clouée sur chaque face, entre deux plaques de mousse.
     back: { foam: [10, 5], skin: 1, rib: 5, ribW: 7 },     // foam : plaque côté assise, plaque côté couchage
     // Bâti de l'assise : un cadre fermé en tasseaux sous un plateau, et un flanc en contreplaqué de chaque côté.
@@ -89,18 +80,18 @@
       beam: 5,                                            // chevron 50 × 70 : épaisseur des longerons et des traverses, posés sur chant
       beamH: 7,                                           // … et leur hauteur
       flank: 2.7,                                         // flancs : planche rabotée 27 × 140
-      nose: 5,                                         // chanfrein du coin avant-haut des flancs et des renforts : le bas du dossier passe devant en basculant
+      nose: 5,                                            // chanfrein du coin avant-haut des flancs et des renforts : le bas du dossier passe devant en basculant
       deck: 1.8,                                          // plateau en MDF
       maxPitch: 40,                                       // entraxe maximal des traverses : le MDF demande des appuis rapprochés
       maxLegSpan: 95,                                     // portée maximale d'un longeron entre deux pieds
       legInset: 6,                                        // retrait des pieds d'angle par rapport au bout du cadre
       upright: 3                                          // épaisseur des montants
     },
-    // Garnissage : ouate + tissu, une seule housse par bloc. Montants, accoudoirs et taquets restent apparents.
+    // Garnissage : ouate + tissu, une seule housse par bloc. Montants, accoudoirs et butées restent apparents.
     cover: {
       wad: 1,                                             // ouate, par face garnie
       radius: 3,                                          // arrondi que la ouate donne aux arêtes
-      bottom: 10                                          // bas du bloc d'assise : hauteur des pieds du commerce
+      bottom: 5                                           // bas du bloc d'assise : hauteur des pieds du commerce
     }
   };
 
@@ -198,16 +189,15 @@
     var tTop0 = E.pivot.d + L.depthBed - E.panel.length;
     var pFront0 = L.seatHeight - E.pivot.h - E.back.t;
     var lean = Math.acos((L.height - E.pivot.h) / Math.hypot(tTop0, pFront0)) - Math.atan2(pFront0, tTop0);
-    var leanLounge = lean + M.extraLean * DEG;
 
     // --- Pivot de la version modifiée ---
     // Le dossier reste un bloc rigide, coupé droit. Il est raccourci par le bas, juste assez pour que son
-    // arête arrière affleure la banquette en position détente, et le pivot est déplacé pour que, dossier
+    // arête arrière passe à M.backGap au-dessus de la banquette en position canapé, et le pivot est déplacé pour que, dossier
     // rabattu, ce bas arrive contre la banquette, qui ne bouge jamais.
     // Deux conditions fixent la position du pivot : (1) en lit, le bas du dossier s'arrête sur l'avant des
-    // coussins ; (2) en position droite, le dossier reste exactement là où il est sur l'original.
-    function cutAt(hp) {                            // bas du dossier : son arête arrière au niveau de l'assise, en détente
-      return (S - hp) * (1 + Math.sin(leanLounge)) / Math.cos(leanLounge);
+    // coussins ; (2) en position canapé, le dossier reste exactement là où il est sur l'original.
+    function cutAt(hp) {                            // bas du dossier : son arête arrière à M.backGap au-dessus de l'assise, en canapé
+      return (S + M.backGap - hp + (S - hp) * Math.sin(lean)) / Math.cos(lean);
     }
     function pivotFor(hp) {
       return { d: frontD + cutAt(hp), h: hp, pF: S - hp - backT };
@@ -228,8 +218,8 @@
     var shiftP = (E.pivot.d - pv.d) * Math.cos(lean) - (E.pivot.h - pv.h) * Math.sin(lean);
 
     // --- Ensemble pivotant ---
-    // En position lit le dossier est à plat devant l'assise, à la même hauteur qu'elle,
-    // et le coin des accoudoirs reste juste au-dessus du sol.
+    // En position lit le dossier est à plat devant l'assise, à la même hauteur qu'elle, et la pointe des
+    // accoudoirs pose au sol.
     // Haut du dossier : là où il est sur l'original, ou plus haut si une profondeur de lit est demandée.
     var tTop = M.bedDepth ? M.bedDepth - P - K.wad + pv.d : tTop0 + shiftT;
     var pRear = S - pv.h;               // face arrière du dossier (dessus du couchage en lit)
@@ -246,21 +236,20 @@
     var tBottom = cutAt(pv.h);
     var backH = tTop - tBottom;
     var backCoreH = backH - 2 * K.wad, tMid = (tBottom + tTop) / 2;
-    // Jour entre l'assise et le bas du dossier : [arête avant, arête arrière], dans chaque position assise.
-    var gapUpright = [pFront, pRear].map(function (p) { return place(tBottom, p, lean)[1] - S; });
-    var gapLounge = place(tBottom, pFront, leanLounge)[1] - S;
+    // Jour entre l'assise et l'arête avant du bas du dossier, en canapé (sous l'arête arrière : M.backGap).
+    var gapFront = place(tBottom, pFront, lean)[1] - S;
     var bedDepth = tTop - pv.d + P + K.wad;               // du bord du dossier rabattu à l'arrière du bloc d'assise
     var sofaTop = place(tTop, pFront, lean)[1];                        // hauteur hors tout en canapé
 
-    // Contour du montant, en branches. La queue part du boulon, droite (le taquet appuie sur son chant arrière), et
+    // Contour du montant, en branches. La queue part du boulon, droite (elle repose sur la butée), et
     // rejoint la tige, vissée au dossier, qui s'arrête en arrondi sous le haut du dossier. De la tige se détache une
-    // branche courbe, l'accoudoir : elle descend vers l'avant puis file à plat, au niveau de l'assise, jusqu'à une pointe arrondie.
+    // branche courbe, l'accoudoir : elle monte en biais vers l'avant, comme le bras en Y de l'original, jusqu'à une pointe arrondie.
     // Entre la branche et la queue, le montant est évidé. Points [t, p].
     var capR = 2.6, Y = M.upright, B = Y.branch;
     // La tige est vissée dans le cadre du dossier : son chant arrière affleure la face arrière du cadre.
     var frameRear = pCore + M.back.skin + M.back.rib;
     var yRear = frameRear, yFront = yRear - Y.stem, yTop = tTop - K.wad - Y.below, yMid = (yFront + yRear) / 2;
-    // Le chant arrière de la queue (sur lequel appuie le taquet) va du boulon au coude, en ligne droite.
+    // Le chant arrière de la queue (qui repose sur la butée) va du boulon au coude, en ligne droite.
     var kink = [40.4 + shiftT, yRear];
     var aRear = Math.atan2(kink[1], kink[0]) - Math.asin(capR / Math.hypot(kink[0], kink[1]));
     var tailRearDir = [Math.cos(aRear), Math.sin(aRear)];
@@ -287,21 +276,21 @@
     }
     // Branche : son axe part du milieu de la tige, à B.from de sa hauteur au-dessus du bas du dossier, la quitte vers
     // l'avant en faisant l'angle B.angle avec elle, puis se courbe jusqu'au centre de la pointe. En lit, la pointe est le
-    // point le plus bas du montant : elle reste à Y.clear du sol. Sa largeur passe de celle de la tige à celle de la pointe.
-    var pMin = pFoot + Y.clear;
-    var tipC = [B.tip, pMin + B.tipR];
-    // La branche arrive à la pointe vers l'avant, en descendant de B.slope degrés en position droite.
+    // point le plus bas du montant : elle pose au sol. Sa largeur passe de celle de la tige à celle de la pointe.
+    var tipC = [B.tip, pFoot + B.tipR];
+    // La branche arrive à la pointe vers l'avant, en descendant de B.slope degrés en position canapé.
     var tipDir = [-Math.sin(lean) * Math.cos(B.slope * DEG) - Math.cos(lean) * Math.sin(B.slope * DEG), -Math.cos(lean) * Math.cos(B.slope * DEG) + Math.sin(lean) * Math.sin(B.slope * DEG)];
     var start = [tBottom + B.from * (yTop - tBottom), yMid];
     var reach = Math.hypot(start[0] - tipC[0], start[1] - tipC[1]);
     var leaveDir = [-Math.cos(B.angle * DEG), -Math.sin(B.angle * DEG)];
     var axisPts = bezier(start, [start[0] + B.leave * reach * leaveDir[0], start[1] + B.leave * reach * leaveDir[1]],
                          [tipC[0] - B.arrive * reach * tipDir[0], tipC[1] - B.arrive * reach * tipDir[1]], tipC, 60);
-    var upper = [], lower = [];
+    var upper = [], lower = [], widths = [];
     axisPts.forEach(function (c, i) {
       var a = axisPts[Math.max(0, i - 1)], b = axisPts[Math.min(axisPts.length - 1, i + 1)];
       var tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty);
       var n = [-ty / l, tx / l], half = (Y.stem + (2 * B.tipR - Y.stem) * i / (axisPts.length - 1)) / 2;   // n : côté du dessus
+      widths.push(2 * half);
       upper.push([c[0] + half * n[0], c[1] + half * n[1]]);
       lower.push([c[0] - half * n[0], c[1] - half * n[1]]);
     });
@@ -368,71 +357,10 @@
     // L'accoudoir en canapé : hauteur du dessus de la branche là où elle quitte le dossier, et de sa pointe.
     var armHigh = place(joint[0], joint[1], lean)[1], armTip = place(tipC[0], tipC[1], lean)[1] + B.tipR;
 
-    // --- Pieds amovibles du lit ---
-    // Un pied en hêtre par côté, vissé en position lit sur l'extérieur de la tige du montant, près du bord du lit :
-    // ce bord n'est plus en porte-à-faux. Deux vis à bouton le serrent dans deux inserts filetés de la tige, une près
-    // de chaque chant. En canapé on dévisse les boutons et on range les pieds. Points [t, p] ; en lit le pied est vertical.
-    var G = M.bedLeg, legT = yTop - G.fromTop;
-    var legScrews = [yRear - G.edge, yFront + G.edge];   // p des deux vis
-    var legOutline = arc(legT, legScrews[0], G.w / 2, 0, Math.PI, 12)                       // bout arrondi autour de la vis du haut
-      .concat([[legT - G.w / 2, pFoot], [legT + G.w / 2, pFoot]]);
-    var legLen = legScrews[0] + G.w / 2 - pFoot;
-    var legFootD = pv.d - legT;                    // pied au sol, en lit
-
-    // --- Barre à taquets ---
-    // Le chant arrière de la queue du montant est une droite. L'axe de la barre est placé à « flank » sous
-    // cette droite en position détente : le montant repose alors sur le flanc du taquet couché. En position
-    // droite la droite est plus haute, et le montant repose sur le nez du taquet relevé.
-    var C = M.cam;
-    var edgeP = function (t) { return capStart[1] + (t - capStart[0]) * tailRearDir[1] / tailRearDir[0]; };
-    var axis = place(C.t - C.flank * tailRearDir[1], edgeP(C.t) + C.flank * tailRearDir[0], leanLounge);
-    // Distance de l'axe de la barre au chant du montant, dossier incliné de « a ».
-    function edgeDist(a) {
-      var p0 = place(capStart[0], capStart[1], a);
-      return Math.abs((axis[0] - p0[0]) * Math.cos(a + aRear) - (axis[1] - p0[1]) * Math.sin(a + aRear));
-    }
-    var normal = function (a) { return Math.PI - (a + aRear); };       // direction de l'axe vers le chant du montant
-    var nose = edgeDist(lean);                                         // de l'axe au bout du nez
-    var corner = Math.hypot(nose, C.flank), cornerA = Math.atan2(C.flank, nose);
-    var camEngaged = normal(lean);                                     // direction du nez, taquet relevé
-    var camRetracted = normal(leanLounge) + Math.PI / 2;               // taquet couché le long du montant
-    // Pour tourner, le taquet relevé doit dégager son coin : le dossier se soulève jusqu'à leanLift.
-    var lo = lean - 6 * DEG, hi = lean;
-    for (var i = 0; i < 40; i++) {
-      var mid = (lo + hi) / 2;
-      if (edgeDist(mid) > corner) lo = mid; else hi = mid;
-    }
-    var leanLift = lo - M.liftMargin * DEG;
-    // Quand on redresse le dossier, le taquet rappelé par son manche suit le montant, un coin en appui dessus.
-    function camFollow(a) { return normal(a) + cornerA + Math.acos(Math.min(1, edgeDist(a) / corner)); }
-    var follow = [];
-    for (i = 0; i <= 24; i++) {
-      var a = leanLounge + (leanLift - leanLounge) * i / 24;
-      follow.push([-a, camFollow(a)]);
-    }
-
-    var camLen = nose + C.heel;
-    var camOutline = [[nose, -C.flank], [nose, C.flank], [-C.heel, C.flank], [-C.heel, -C.flank]];
-    // Levier : calé sur le bout de la barre, à l'opposé du nez. Son poids rappelle le taquet en position relevée.
-    var V = M.lever;
-    var leverOutline = join([arc(0, 0, V.hub, -Math.PI / 2, Math.PI / 2, 10), arc(-V.length, 0, V.tip, Math.PI / 2, 1.5 * Math.PI, 8)]);
-    // Position (d, hauteur) d'un point du taquet, nez orienté selon « phi ».
-    function camPoint(u, v, phi) {
-      return [axis[0] + u * Math.cos(phi) - v * Math.sin(phi), axis[1] + u * Math.sin(phi) + v * Math.cos(phi)];
-    }
-    // Pion de fin de course : un seul par côté. Il est placé là où le flanc du taquet vient le toucher
-    // dans ses deux positions extrêmes, relevé comme couché.
-    var pinK = C.flank + M.pin.r;
-    var pin = camPoint(-pinK * Math.tan((camRetracted - camEngaged) / 2), pinK, camEngaged);
-    var xLever = xPanelOut + C.thick;              // le levier est plaqué contre le taquet
-    var xBarEnd = xPanelOut + C.thick - 1;         // le tube s'arrête dans le taquet : il tient dans 2 m
-
-    // Repère de l'ensemble « back » : (x, y, z) = (x, t, -p) ; de l'ensemble « cam » : (x, y, z) = (x, v, -u).
+    // Repère de l'ensemble « back » : (x, y, z) = (x, t, -p).
     var local = function (pt) { return [-pt[1], pt[0]]; };
     var uprightPts = uprightOutline.map(local);
     var backPts = [[tBottom, pFront], [tTop, pFront], [tTop, pRear], [tBottom, pRear]].map(local);
-    var toCam = function (pt) { return [-pt[0], pt[1]]; };
-    var camPts = camOutline.map(toCam), leverPts = leverOutline.map(toCam);
 
     var toBase = function (pt) { return [z(pt[0]), pt[1]]; };
     // Panneaux latéraux rectangulaires, arasés au niveau du plateau : le coussin passe par-dessus.
@@ -444,20 +372,34 @@
     }
     var panelPts = nosed(K.bottom);
 
+    // --- Butée ---
+    // Un tourillon en hêtre collé dans le flanc, qui dépasse dans le plan du montant. En canapé, le chant arrière de la
+    // queue repose dessus : c'est lui qui retient le dossier quand on s'y adosse. Il est placé aussi haut que le flanc le
+    // permet (O.wood de bois au-dessus), donc aussi loin du pivot que possible. Pour faire le lit, on bascule le dossier
+    // vers l'avant : la queue quitte la butée, et la pointe des accoudoirs vient poser au sol.
+    var O = M.stop, stopH = panelTop - O.wood - O.r;
+    function stopAt(s) {                           // centre de la butée qui toucherait le chant arrière à « s » du bout arrondi
+      return [capStart[0] + s * tailRearDir[0] - O.r * tailN[0], capStart[1] + s * tailRearDir[1] - O.r * tailN[1]];
+    }
+    var h0 = place(stopAt(0)[0], stopAt(0)[1], lean)[1], h1 = place(stopAt(1)[0], stopAt(1)[1], lean)[1];
+    var stopLocal = stopAt((stopH - h0) / (h1 - h0));
+    var stop = place(stopLocal[0], stopLocal[1], lean);                // centre de la butée (d, hauteur)
+    var stopT = stopLocal[0] + O.r * tailN[0];                         // point de contact sur la queue, distance au pivot
+    var stopArm = Math.hypot(stop[0] - pv.d, stop[1] - pv.h);         // du pivot au centre de la butée
+    var tipFootD = pv.d - tipC[0];                                     // pointe des accoudoirs au sol, en lit
+
+
     var beamT = F.beam, beamH = deckTop - F.deck - K.bottom, beamY = K.bottom + beamH / 2;   // section et hauteur d'axe des poutres du cadre
     var legXs = Array.apply(null, { length: legBays + 1 }).map(function (unused, i) { return -legReach + i * legPitch; });
     var barPitch = (fullW - beamT) / (nCross + 1);   // entraxe des traverses du cadre
-    var sleeveTop = axis[1] + M.bar.sleeve;        // dessus du fourreau de la tige
     // Profondeur d'assise : de l'avant des coussins à la face avant du dossier, au niveau de l'assise.
     var seatUsable = Math.round(place((S - pv.h + pFront * Math.sin(lean)) / Math.cos(lean), pFront, lean)[0] - frontD);
-    var screwTs = [tBottom + 4, (tBottom + yTop - G.fromTop) / 2, yTop - G.fromTop - 4];   // la vis du haut sous les inserts des pieds
+    var screwTs = [tBottom + 4, (tBottom + yTop) / 2 - 1, yTop - 6];
     // Les vis se placent au milieu de la partie du cadre que le montant recouvre.
     var screwP = (Math.max(pCore + M.back.skin, yFront) + Math.min(pCore + boxT - M.back.skin, yRear)) / 2;
     var xWide = xOut;                              // les montants sont ce qu'il y a de plus large
-    var loungeTop = place(tTop, pFront, leanLounge)[1];
     var rearD = P + K.wad;            // face arrière finie du bloc d'assise
-    var loungeRear = Math.max(rearD, place(tTop, pRear, leanLounge)[0]);
-    var swing = (camRetracted - camEngaged) / DEG;
+    var sofaRear = Math.max(rearD, place(tTop, pRear, lean)[0]);
 
     function mirror(make) { return [make(1), make(-1)]; }
     function span(sign, a, b) { return sign > 0 ? { x0: a, x1: b } : { x0: -b, x1: -a }; }
@@ -475,21 +417,21 @@
           ['Pivot → sommet', round1(yTop), 'm'],
           ['Largeur de la tige (le long du dossier)', Y.stem, 'm'],
           ['Accoudoir : dessus, là où il quitte la tige, depuis le sol, en canapé', round1(armHigh), 'm'],
-          ['Accoudoir : dessus de la partie à plat, depuis le sol, en canapé', round1(armTip), 'm'],
+          ['Accoudoir : dessus de la pointe, depuis le sol, en canapé', round1(armTip), 'm'],
           ['Accoudoir : largeur de la branche', fr(Y.stem) + ' → ' + fr(2 * B.tipR) + ' cm', 'm'],
-          ['Garde au sol de la pointe, en lit', Y.clear, 'm'],
+          ['Pointe au sol en lit, depuis l\'avant du bloc d\'assise', round1(frontD - tipFootD), 'm'],
           ['Haut de la tige, sous le haut du dossier', round1(tTop - yTop), 'm'],
           ['Rayon du bout arrondi', capR, 'p'],
           ['Fond du creux sous l\'accoudoir : trou de', fr(2 * B.notch * 10) + ' mm', 'm']
         ],
         note: 'Pièce clé du mécanisme. La queue est boulonnée au panneau latéral, la tige est vissée au dossier (3 vis). ' +
               'La tige s\'arrête en demi-cercle, ' + fr(tTop - yTop) + ' cm sous le haut du dossier. De la tige se détache ' +
-              'une branche courbe, l\'accoudoir (chant de 3 cm, poncé et arrondi) : elle descend vers l\'avant puis file ' +
-              'à plat, au niveau de l\'assise, jusqu\'à une pointe arrondie. Entre la branche et le tronc, le montant est évidé : ' +
+              'une branche courbe, l\'accoudoir (chant de 3 cm, poncé et arrondi) : elle monte en biais vers l\'avant, comme ' +
+              'le bras en Y de l\'original, jusqu\'à une pointe arrondie. Entre la branche et le tronc, le montant est évidé : ' +
               'un trou de ' + fr(2 * B.notch * 10) + ' mm à la scie cloche au fond du creux, puis deux traits de scie sauteuse. Le chant ' +
-              'arrière de la queue, bien droit, repose sur le taquet : sur son nez en position droite, sur son flanc en ' +
-              'position détente. En lit la pointe de la branche passe à ' + fr(Y.clear) + ' cm du sol, sans le toucher. ' +
-              'Deux inserts filetés M8, en haut de la tige, reçoivent les vis des pieds amovibles. ' +
+              'arrière de la queue, bien droit, repose en canapé sur la butée. En lit la pointe de la branche pose au sol ' +
+              '(patin feutre), ' + fr(tTop - tipC[0]) + ' cm en retrait du bord du lit : les accoudoirs deviennent les pieds du lit. ' +
+              'En lit, la branche est presque verticale : elle porte le lit en compression, sans plier. ' +
               'Le pivot étant déplacé, la queue est plus courte que sur l\'original : ' + fr(Math.hypot(kink[0], kink[1])) +
               ' cm du boulon au coude, au lieu de 46.',
         shapes: mirror(function (s) {
@@ -576,57 +518,13 @@
           ['Hauteur finie', round1(backH), 'm'],
           ['Épaisseur finie', round1(backT), 'm'],
           ['Ouate, par face', K.wad, 'm'],
-          ['Inclinaison en position droite', fr(lean / DEG) + '°', 'p'],
-          ['Inclinaison en position détente', fr(leanLounge / DEG) + '°', 'm'],
-          ['Jour sous le dossier, position droite', fr(gapUpright[1]) + ' à ' + fr(gapUpright[0]) + ' cm', 'm'],
-          ['Jour sous le dossier, détente', '0 à ' + fr(gapLounge) + ' cm', 'm']
+          ['Inclinaison en canapé', fr(lean / DEG) + '°', 'p'],
+          ['Jour sous le dossier, en canapé', fr(M.backGap) + ' à ' + fr(gapFront) + ' cm', 'm']
         ],
         note: 'La ouate adoucit les arêtes des plaques, le tissu enveloppe le tout sauf les deux bouts, plaqués contre ' +
-              'les montants. La mécanique est réglée sur ces cotes finies : en détente l\'arête arrière affleure ' +
-              'l\'assise, en lit le bas vient contre le bloc d\'assise.',
+              'les montants. La mécanique est réglée sur ces cotes finies : en canapé l\'arête arrière passe ' +
+              'à ' + fr(M.backGap) + ' cm de l\'assise, en lit le bas vient contre le bloc d\'assise.',
         shapes: [{ type: 'box', size: [2 * xPanelOut, backH, backT], radius: K.radius, center: [0, tMid, -(pFront + pRear) / 2] }]
-      },
-      {
-        id: 'bedLeg', group: 'back', color: 'padwood', qty: 2, bedOnly: true,
-        name: 'Pied amovible du lit',
-        size: [round1(legLen), G.w, G.t],
-        material: 'Hêtre massif 40 × 30 mm, teinté, patin feutre sous le bout',
-        dims: [
-          ['Longueur (du bout arrondi au sol)', round1(legLen), 'm'],
-          ['Largeur', G.w, 'm'],
-          ['Épaisseur', G.t, 'm'],
-          ['Axe, sous le haut de la tige', G.fromTop, 'm'],
-          ['Entraxe des deux vis', round1(legScrews[0] - legScrews[1]), 'm'],
-          ['Distance au bord du lit', round1(tTop - legT), 'm']
-        ],
-        note: 'Ne sert qu\'en lit. On rabat le dossier, on présente le pied contre l\'extérieur du montant, en haut de ' +
-              'la tige, et on le serre par deux vis à bouton dans les inserts du montant : il descend droit jusqu\'au sol ' +
-              'et porte le bord du lit, qui n\'est plus en porte-à-faux. On peut s\'y asseoir sans que l\'assise se ' +
-              'soulève. En canapé on dévisse les boutons et on range les pieds. Couper à la longueur qui touche le sol ' +
-              '(patin feutre compris), dossier rabattu.',
-        shapes: mirror(function (s) {
-          var sp = span(s, xOut, xOut + G.t);
-          return { type: 'profile', pts: legOutline.map(local), x0: sp.x0, x1: sp.x1 };
-        })
-      },
-      {
-        id: 'legScrew', group: 'back', color: 'metal', qty: 4, bedOnly: true,
-        name: 'Vis à bouton des pieds',
-        cuts: [{ stock: 'knob', qty: 4 }, { stock: 'insert', qty: 4 }],
-        material: 'Vis à bouton étoile M8 × 50 ; insert fileté M8 à visser dans le bois',
-        dims: [
-          ['Par pied', '2 vis', 'm'],
-          ['Sous le haut de la tige', G.fromTop, 'm'],
-          ['Des chants de la tige', G.edge, 'm']
-        ],
-        note: 'Les inserts sont vissés une fois pour toutes dans l\'extérieur de la tige du montant ; rien ne dépasse ' +
-              'en canapé. Les boutons se serrent à la main : aucun outil pour monter ou ranger les pieds.',
-        shapes: [1, -1].reduce(function (acc, s) {
-          var sp = span(s, xOut - 2, xOut + G.t + 0.6);
-          return acc.concat(legScrews.map(function (p) {
-            return { type: 'cylinder', r: 0.4, x0: sp.x0, x1: sp.x1, y: legT, z: -p };
-          }));
-        }, [])
       },
       {
         id: 'screw', group: 'back', color: 'metal', qty: 6, symbolic: true,
@@ -654,11 +552,10 @@
           ['Longueur', 2 * xPanelOut, 'm'],
           ['Profondeur', P, 'm'],
           ['Épaisseur', M.seat.foam, 'm'],
-          ['Entaille à chaque bout', fr(F.flank + beamT) + ' × ' + fr(panelTop - deckTop) + ' cm', 'm'],
-          ['Saignée dessous, pour le fourreau', 'ø ' + fr(2 * M.bar.sleeve) + ' cm, à ' + fr(axis[1] - deckTop) + ' cm du plateau', 'm']
+          ['Entaille à chaque bout', fr(F.flank + beamT) + ' × ' + fr(panelTop - deckTop) + ' cm', 'm']
         ],
-        note: 'Une seule plaque. Elle est entaillée à chaque bout pour coiffer le haut des panneaux, et rainurée ' +
-              'dessous d\'une saignée pour le fourreau de la tige ; elle est collée sur le plateau. La profondeur utile devant le ' +
+        note: 'Une seule plaque. Elle est entaillée à chaque bout pour coiffer le haut des panneaux, et collée ' +
+              'sur le plateau. La profondeur utile devant le ' +
               'dossier est d\'environ ' + seatUsable + ' cm.',
         shapes: [
           { type: 'box', size: [frameW, panelTop - deckTop, P], center: [0, (panelTop + deckTop) / 2, z(P / 2)] },
@@ -679,7 +576,7 @@
         ],
         note: 'Le même tissu descend d\'un seul tenant du dessus de la mousse jusqu\'au bas du socle : l\'assise se lit ' +
               'comme un bloc. Ouate sur le dessus, l\'avant et l\'arrière ; sur les flancs le tissu est tendu à même ' +
-              'les panneaux, pour laisser le montant et le taquet travailler (une rondelle sous chacun).',
+              'les panneaux, pour laisser le montant travailler (une rondelle sous le boulon).',
         shapes: [{
           type: 'box', size: [2 * xPanelOut, S - K.bottom, P + 2 * K.wad], radius: K.radius,
           center: [0, (S + K.bottom) / 2, z(P / 2)]
@@ -698,11 +595,11 @@
           ['Chant supérieur par rapport au sol', panelTop, 'm'],
           ['Dépassement au-dessus du plateau', round1(panelTop - deckTop), 'm'],
           ['Chanfrein du coin avant-haut', fr(F.nose) + ' × ' + fr(F.nose) + ' cm', 'm'],
-          ['Perçage de la tige', 'ø ' + fr(2 * M.bar.r + 0.2) + ' cm', 'm']
+          ['Perçage de la butée', 'ø ' + fr(2 * O.r * 10) + ' mm, à ' + fr(stop[0]) + ' cm de l\'avant et ' + fr(panelTop - stop[1]) + ' cm sous le chant', 'm']
         ],
         note: 'Simple planche, collée et vissée sur la traverse de bout et sur son renfort : c\'est le flanc ' +
-              'du bloc d\'assise, et la face sur laquelle travaillent le montant et le taquet. Il reçoit le boulon ' +
-              'de pivot, la tige (perçage large, elle doit tourner librement) et le pion de fin de course. ' +
+              'du bloc d\'assise, et la face sur laquelle travaille le montant. Il reçoit le boulon ' +
+              'de pivot et la butée. ' +
               'La mousse le coiffe, le tissu de l\'assise le recouvre. Son coin avant-haut est abattu, comme celui du ' +
               'renfort : le bas du dossier descend juste devant quand on le rabat en lit.',
         shapes: mirror(function (s) {
@@ -722,10 +619,10 @@
           ['Épaisseur', beamT, 'm'],
           ['Dessus par rapport au sol', panelTop, 'm'],
           ['Chanfrein du coin avant-haut', fr(F.nose) + ' × ' + fr(F.nose) + ' cm', 'm'],
-          ['Bois traversé par le pivot et la tige', F.flank + beamT, 'm']
+          ['Bois traversé par le pivot et la butée', F.flank + beamT, 'm']
         ],
         note: 'Second tasseau, empilé sur la traverse de bout et sur le bout des deux longerons, collé et vissé. ' +
-              'Il est à la hauteur de la tige et du pion : avec le panneau, ils traversent ' +
+              'Il est à la hauteur du pivot et de la butée : avec le panneau, ils traversent ' +
               fr(F.flank + beamT) + ' cm de bois au lieu de ' + fr(F.flank) + '. Le boulon de pivot traverse ' +
               (pv.h > panelTop - beamH ? 'lui aussi ce renfort' : 'la traverse de bout, juste dessous') +
               ', à ' + fr(Math.abs(pv.h - (panelTop - beamH))) + ' cm du joint entre les deux tasseaux. Le plateau en MDF vient buter contre lui.',
@@ -795,28 +692,11 @@
         shapes: [{ type: 'box', size: [frameW, F.deck, P], center: [0, deckTop - F.deck / 2, z(P / 2)] }]
       },
       {
-        id: 'sleeve', group: 'base', color: 'metal', qty: 1, core: true,
-        name: 'Fourreau de la tige',
-        cuts: [{ stock: 'sleeve', length: frameW, qty: 1, label: 'Fourreau' }],
-        size: [frameW, 2 * M.bar.sleeve, 2 * M.bar.sleeve],
-        material: 'Tube IRL ø 25 mm (gaine électrique rigide), tenu par des colliers sur cales',
-        dims: [
-          ['Longueur', frameW, 'm'],
-          ['Diamètre', 2 * M.bar.sleeve, 'm'],
-          ['Axe au-dessus du plateau', round1(axis[1] - deckTop), 'm'],
-          ['Axe depuis l\'avant du panneau', round1(axis[0]), 'm'],
-          ['Mousse restante au-dessus', round1(foamTop - sleeveTop), 'm']
-        ],
-        note: 'La tige traverse le bas de la mousse ; ce tube la laisse tourner librement. Il remplace l\'ancien ' +
-              'carter : 2,5 cm de large au lieu de 7, et plus bas. La mousse reçoit une simple saignée dessous.',
-        shapes: [{ type: 'cylinder', r: M.bar.sleeve, x0: -xFrame, x1: xFrame, y: axis[1], z: z(axis[0]) }]
-      },
-      {
         id: 'leg', group: 'base', color: 'honey', qty: 2 * legXs.length,
         name: 'Pied',
         cuts: [{ stock: 'foot', qty: 2 * legXs.length }],
         size: [K.bottom, beamT, beamT],
-        material: 'Pieds de meuble du commerce, hauteur 10 cm, vissés sous les longerons',
+        material: 'Pieds de meuble du commerce, hauteur ' + K.bottom + ' cm, vissés sous les longerons',
         dims: [
           ['Hauteur', K.bottom, 'm'],
           ['Section en haut', fr(beamT) + ' × ' + fr(beamT) + ' cm', 'm'],
@@ -831,89 +711,6 @@
             return { type: 'frustum', top: beamT, bottom: beamT - 1, y0: 0, y1: K.bottom, x: x, z: z(d) };
           }));
         }, [])
-      },
-      {
-        id: 'cam', group: 'cam', color: 'padwood', qty: 2,
-        name: 'Taquet',
-        size: [round1(camLen), 2 * C.flank, C.thick],
-        material: 'Hêtre massif, fil dans la longueur',
-        dims: [
-          ['Longueur', round1(camLen), 'm'],
-          ['Largeur', 2 * C.flank, 'm'],
-          ['Épaisseur', C.thick, 'm'],
-          ['Axe → bout du nez', round1(nose), 'm'],
-          ['Axe → flanc', C.flank, 'm'],
-          ['Axe → talon', C.heel, 'm'],
-          ['Perçage', 'ø ' + fr(2 * M.bar.r) + ' cm', 'm'],
-          ['Rotation entre les deux positions', fr(swing) + '°', 'm']
-        ],
-        note: 'Simple bloc rectangulaire, fixé sur la barre contre le panneau, bien visible sous le montant. Relevé, il porte ' +
-              'le montant sur son nez : position droite. Couché, il le porte sur son flanc : position détente. Tant que ' +
-              'le dossier appuie sur le nez, le taquet ne peut pas tourner : il faut d\'abord soulager le dossier. ' +
-              'On le manœuvre par le levier. Coller et visser un seul des deux taquets, l\'autre seulement ' +
-              'vissé, pour pouvoir démonter la barre.',
-        shapes: mirror(function (s) {
-          var sp = span(s, xPanelOut, xPanelOut + C.thick);
-          return { type: 'profile', pts: camPts, x0: sp.x0, x1: sp.x1 };
-        })
-      },
-      {
-        id: 'lever', group: 'cam', color: 'padwood', qty: 2,
-        name: 'Levier de commande',
-        size: [round1(V.length + V.hub + V.tip), 2 * V.hub, V.t],
-        material: 'Hêtre massif, collé et vissé sur la face du taquet',
-        dims: [
-          ['Longueur hors tout', round1(V.length + V.hub + V.tip), 'm'],
-          ['Axe → bout', round1(V.length + V.tip), 'm'],
-          ['Largeur au moyeu', 2 * V.hub, 'm'],
-          ['Largeur au bout', 2 * V.tip, 'm'],
-          ['Épaisseur', V.t, 'm']
-        ],
-        note: 'Plaqué contre le taquet, en bout de barre, comme la manette d\'un siège de voiture. Pour s\'incliner on le lève ; son poids ramène ensuite le taquet ' +
-              'en position relevée. Un de chaque côté : ils tournent ensemble. Collé et vissé sur le taquet, à l\'opposé de son nez.',
-        shapes: mirror(function (s) {
-          var sp = span(s, xLever, xLever + V.t);
-          return { type: 'profile', pts: leverPts, x0: sp.x0, x1: sp.x1 };
-        })
-      },
-      {
-        id: 'bar', group: 'cam', color: 'honey', qty: 1,
-        name: 'Tige traversante',
-        cuts: [{ stock: 'tube', length: 2 * xBarEnd, qty: 1, label: 'Tube de commande' }],
-        size: [round1(2 * xBarEnd), 2 * M.bar.r, 2 * M.bar.r],
-        material: 'Tube d\'acier rond ø 16 mm, longueur du commerce : 2 m',
-        dims: [
-          ['Diamètre', 2 * M.bar.r, 'm'],
-          ['Longueur', round1(2 * xBarEnd), 'm'],
-          ['Axe depuis l\'avant du panneau', round1(axis[0]), 'm'],
-          ['Axe sous le chant supérieur', round1(panelTop - axis[1]), 'm'],
-          ['Axe par rapport au sol', round1(axis[1]), 'm']
-        ],
-        note: 'Traverse le canapé dans le bas de la mousse, à l\'intérieur d\'un fourreau. Elle porte de chaque ' +
-              'côté un taquet et son levier : tout tourne ensemble. Elle ne transmet que l\'effort de ' +
-              'la main ; le poids du dossier passe du taquet au panneau, juste à côté. Chaque bout entre de 2 cm dans son ' +
-              'taquet et y est goupillé par une vis traversante.',
-        shapes: [{ type: 'cylinder', r: M.bar.r, x0: -xBarEnd, x1: xBarEnd, y: 0, z: 0 }]
-      },
-      {
-        id: 'pin', group: 'base', color: 'mahogany', qty: 2,
-        name: 'Pion de fin de course',
-        size: [C.thick, 2 * M.pin.r, 2 * M.pin.r],
-        material: 'Tourillon hêtre collé dans le panneau',
-        dims: [
-          ['Diamètre', 2 * M.pin.r, 'm'],
-          ['Saillie', C.thick, 'm'],
-          ['Position depuis l\'avant du panneau', round1(pin[0]), 'm'],
-          ['Position sous le chant supérieur', round1(panelTop - pin[1]), 'm'],
-          ['Distance à l\'axe de la barre', round1(Math.hypot(pin[0] - axis[0], pin[1] - axis[1])), 'm']
-        ],
-        note: 'Un seul par côté, sous la barre. Le même flanc du taquet vient le toucher dans ses deux positions ' +
-              'extrêmes : taquet relevé (le nez se présente à plat sous le montant) et taquet couché (le flanc est ' +
-              'parallèle au montant qui descend). Le positionner à l\'atelier, taquet en place.',
-        shapes: mirror(function (s) {
-          var sp = span(s, xPanelOut, xPanelOut + C.thick);
-          return { type: 'cylinder', r: M.pin.r, x0: sp.x0, x1: sp.x1, y: pin[1], z: z(pin[0]) };
-        })
       },
       {
         id: 'bolt', group: 'base', color: 'metal', qty: 2, symbolic: true,
@@ -933,6 +730,31 @@
           var sp = span(s, xFrame, xOut + 0.4);
           return { type: 'cylinder', r: E.pivot.r, x0: sp.x0, x1: sp.x1, y: pv.h, z: z(pv.d) };
         })
+      },
+      {
+        id: 'stop', group: 'base', color: 'padwood', qty: 2,
+        name: 'Butée',
+        cuts: [{ stock: 'dowel', length: F.flank + beamT + F.upright, qty: 2, label: 'Butée' }],
+        size: [round1(F.flank + beamT + F.upright), 2 * O.r, 2 * O.r],
+        material: 'Tourillon hêtre ø ' + fr(2 * O.r * 10) + ' mm, collé dans le flanc et son renfort',
+        dims: [
+          ['Diamètre', 2 * O.r, 'm'],
+          ['Saillie hors du flanc', F.upright, 'm'],
+          ['Longueur (saillie + flanc + renfort)', round1(F.flank + beamT + F.upright), 'm'],
+          ['Position depuis l\'avant du panneau', round1(stop[0]), 'm'],
+          ['Position sous le chant supérieur', round1(panelTop - stop[1]), 'm'],
+          ['Distance au boulon de pivot', round1(stopArm), 'm'],
+          ['Contact sur la queue, depuis le pivot', round1(stopT), 'm']
+        ],
+        note: 'La butée de l\'original : un gros tourillon en hêtre, collé dans un trou qui traverse le flanc et son ' +
+              'renfort, et qui dépasse de l\'épaisseur du montant. En canapé, le chant arrière de la queue du montant ' +
+              'repose dessus : c\'est elle qui retient le dossier quand on s\'y adosse. Pour faire le lit, on soulève ' +
+              'l\'avant du dossier et on le bascule vers l\'avant ; la queue quitte la butée. Percer à l\'atelier, ' +
+              'dossier monté et posé en position canapé, pour qu\'elle touche bien la queue.',
+        shapes: mirror(function (s) {
+          var sp = span(s, xPanelIn - beamT, xOut);
+          return { type: 'cylinder', r: O.r, x0: sp.x0, x1: sp.x1, y: stop[1], z: z(stop[0]) };
+        })
       }
     ];
 
@@ -949,47 +771,40 @@
       audit: {
         beamT: beamT, beamH: beamH, legSpan: legPitch, crossSpan: P - beamT, pitch: barPitch, deckT: F.deck,
         backSpan: M.width, ribW: M.back.ribW, rib: M.back.rib,
-        lever: Math.hypot(axis[0] - pv.d, axis[1] - pv.h), camT: C.thick, barR: M.bar.r, uprightT: F.upright,
-        // Lit : bord avant du dossier rabattu, pieds du lit, pivots, pieds avant et milieu du bloc d'assise (distances « d »).
-        bed: { edge: pv.d - tTop, leg: legFootD, pivot: pv.d, frontLeg: beamT / 2, rearLeg: P - beamT / 2 },
-        // Pied amovible : nombre et diamètre des vis, épaisseur du pied.
-        bedLeg: { screws: legScrews.length, boltD: 0.8, t: G.t }
+        stopArm: stopArm, stopR: O.r, stopOut: F.upright, uprightT: F.upright,
+        // Lit : bord avant du dossier rabattu, pointe des accoudoirs au sol, pivots, pieds avant et arrière du bloc d'assise (distances « d »).
+        bed: { edge: pv.d - tTop, leg: tipFootD, pivot: pv.d, frontLeg: beamT / 2, rearLeg: P - beamT / 2 },
+        // Branche de l'accoudoir, libre (du fond du creux à la pointe) : distances t au pivot de son axe et largeurs. En lit,
+        // t donne la position horizontale : l'écart à la pointe est le bras de levier de la réaction du sol.
+        arm: { t: axisPts.slice(j).map(function (c) { return c[0]; }), width: widths.slice(j), tip: tipC[0] }
       },
       parts: parts,
       // Fixation des montants, en distance au pivot perpendiculairement au dossier : chants du haut du montant, faces du cadre, ligne des vis.
       stem: { front: yFront, rear: yRear, frame: [pCore + M.back.skin, pCore + boxT - M.back.skin], screw: screwP },
-      // Axes de rotation des deux ensembles mobiles.
-      pivot: { back: { y: pv.h, z: z(pv.d) }, cam: { y: axis[1], z: z(axis[0]) } },
-      // Rotation de l'ensemble dossier autour de l'axe x. « lift » : dossier soulagé, le temps de tourner le taquet.
-      angle: { lounge: -leanLounge, sofa: -lean, lift: -leanLift, bed: Math.PI / 2 },
+      // Axe de rotation de l'ensemble dossier.
+      pivot: { back: { y: pv.h, z: z(pv.d) } },
+      // Rotation de l'ensemble dossier autour de l'axe x.
+      angle: { sofa: -lean, bed: Math.PI / 2 },
       // Pour installer un mannequin : dessus fini de l'assise, et face avant du dossier (distance p au pivot, dans son repère).
       sitter: { seat: S, face: pFront },
-      // Rotation des taquets. « follow » : angle du taquet qui suit le montant, pour chaque angle du dossier.
-      cam: { engaged: camEngaged, retracted: camRetracted, follow: follow },
-      // Zone à cadrer pour observer le mécanisme.
-      focus: { min: [xPanelIn - 6, axis[1] - 20, z(axis[0] + 30)], max: [xBarEnd + 1, axis[1] + 22, z(axis[0] - 30)] },
+      // Zone à cadrer pour observer le mécanisme : le pivot, la butée et le bas du montant.
+      focus: { min: [xPanelIn - 6, K.bottom, z(stop[0] + 25)], max: [xOut + 1, S + 20, z(pv.d - 30)] },
       flipDeg: Math.round(90 + lean / DEG),
       // Ce que la modification change, pour la vue d'ensemble.
       custom: [
-        ['Inclinaison du dossier — droite', fr(lean / DEG) + '°', 'p'],
-        ['Inclinaison du dossier — détente', fr(leanLounge / DEG) + '°', 'm'],
+        ['Inclinaison du dossier', fr(lean / DEG) + '°', 'p'],
         ['Largeur hors tout', round1(2 * xWide), 'm'],
-        ['Largeur avec les leviers', round1(2 * (xLever + V.t)), 'm'],
-        ['Profondeur en canapé', round1(Math.max(rearD, place(tTop, pRear, lean)[0]) - frontD), 'm'],
+        ['Profondeur en canapé', round1(sofaRear - frontD), 'm'],
         ['Hauteur en canapé', round1(sofaTop), 'm'],
         ['Profondeur en lit', round1(bedDepth), 'm'],
         ['Dossier fini (hauteur × épaisseur)', fr(backH) + ' × ' + fr(backT) + ' cm', 'm'],
-        ['Profondeur en détente', round1(loungeRear - frontD), 'm'],
-        ['Hauteur en détente', round1(loungeTop), 'm'],
-        ['Jour sous le dossier, position droite', fr(gapUpright[1]) + ' à ' + fr(gapUpright[0]) + ' cm', 'm'],
-        ['Jour sous le dossier, détente', '0 à ' + fr(gapLounge) + ' cm', 'm'],
-        ['Rotation du taquet', fr(swing) + '°', 'm'],
-        ['Dossier à soulager pour tourner le taquet', fr((lean - leanLift) / DEG) + '°', 'm']
+        ['Jour sous le dossier, en canapé', fr(M.backGap) + ' à ' + fr(gapFront) + ' cm', 'm'],
+        ['Accoudoir : départ et pointe, depuis le sol', fr(armHigh) + ' et ' + fr(armTip) + ' cm', 'm'],
+        ['Pointe des accoudoirs au sol, en lit', fr(tTop - tipC[0]) + ' cm en retrait du bord', 'm']
       ],
-      // Encombrement hors tout (hors leviers et bouts de barre).
+      // Encombrement hors tout.
       overall: {
-        lounge: { min: [-xWide, 0, z(loungeRear)], max: [xWide, loungeTop, z(frontD)] },
-        sofa: { min: [-xWide, 0, z(Math.max(rearD, place(tTop, pRear, lean)[0]))], max: [xWide, sofaTop, z(frontD)] },
+        sofa: { min: [-xWide, 0, z(sofaRear)], max: [xWide, sofaTop, z(frontD)] },
         bed: { min: [-xWide, 0, z(rearD)], max: [xWide, S, z(pv.d - tTop)] }
       }
     };

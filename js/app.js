@@ -21,7 +21,7 @@
     h: 'Hypothèse — non visible sur les photos',
     m: 'Modification personnelle — cote de conception'
   };
-  var POS_NAMES = { sofa: 'canape', lounge: 'detente', bed: 'lit' };
+  var POS_NAMES = { sofa: 'canape', bed: 'lit' };
   var LOOK_NAMES = { covered: 'habille', foam: 'mousse', mdf: 'mdf', structure: 'structure' };
   var LAYERS = ['structure', 'mdf', 'foam', 'cover'];      // ordre de pose ; le rendu « covered » montre la dernière
   var VIEW_NAMES = { iso: '3-4', front: 'face', side: 'profil', top: 'dessus', mech: 'mecanisme' };
@@ -139,21 +139,21 @@
       root.appendChild(el('p', {
         class: 'note',
         text: 'Lit : le dossier bascule d’environ ' + model.flipDeg + '° vers l’avant autour de deux boulons, passe au-dessus ' +
-              'de l’assise et se pose à plat devant elle. Les accoudoirs pointent alors vers le sol, sans le toucher ; deux pieds qu’on visse au montant portent le bord du lit.'
+              'de l’assise et se pose à plat devant elle. La pointe des accoudoirs pose alors au sol : ils servent de pieds au lit.'
       }));
-      root.appendChild(el('p', { class: 'meta', text: 'Version modifiée : deux blocs de mousse garnis, position détente, banquette fixe' }));
+      root.appendChild(el('p', { class: 'meta', text: 'Version modifiée : deux blocs de mousse garnis, banquette fixe' }));
       root.appendChild(dimsTable(model.custom));
       root.appendChild(el('p', {
         class: 'note',
-        text: 'S’incliner : se pencher en avant pour soulager le dossier, lever l’un des deux leviers, sur le côté de ' +
-              'l’assise, se laisser aller en arrière, lâcher. Se redresser : ramener le dossier vers l’avant, un peu ' +
-              'au-delà de la position droite ; les taquets se relèvent seuls, on repose le dossier dessus.'
+        text: 'Mécanisme de l’original : en canapé, la queue de chaque montant repose sur une butée fixe, un gros ' +
+              'tourillon de hêtre qui sort du flanc. Pour faire le lit, on bascule le dossier vers l’avant : la queue ' +
+              'quitte la butée et la pointe des accoudoirs vient poser au sol.'
       }));
       root.appendChild(el('p', {
         class: 'note subtle',
         text: 'Quatre rendus, dans l’ordre de fabrication : « Structure » (tasseaux, panneaux, mécanisme), « MDF », ' +
-              '« Mousse », puis « Habillé » (ouate et tissu). Vue « Mécanisme » : alterner Canapé et Détente pour ' +
-              'suivre les taquets.'
+              '« Mousse », puis « Habillé » (ouate et tissu). Vue « Mécanisme » : alterner Canapé et Lit pour ' +
+              'voir la queue quitter la butée.'
       }));
       var fabric = SofaFabrics.byId(state.fabric);
       root.appendChild(el('p', { class: 'meta', text: 'Tissu : ' + fabric.name }));
@@ -532,12 +532,10 @@
 
     // --- pièces ---
 
-    // Trois ensembles : le bâti fixe, le dossier qui tourne autour des boulons, les taquets autour de leur barre.
-    // Les pieds amovibles du lit (« bedOnly ») sont portés par le dossier et ne sont montrés qu'en position lit.
-    var groups = { base: new THREE.Group(), back: new THREE.Group(), cam: new THREE.Group() };
+    // Deux ensembles : le bâti fixe, et le dossier qui tourne autour des boulons.
+    var groups = { base: new THREE.Group(), back: new THREE.Group() };
     groups.back.position.set(0, model.pivot.back.y, model.pivot.back.z);
-    groups.cam.position.set(0, model.pivot.cam.y, model.pivot.cam.z);
-    scene.add(groups.base, groups.back, groups.cam);
+    scene.add(groups.base, groups.back);
 
     var meshes = [];
     parts.forEach(function (part) {
@@ -644,66 +642,31 @@
         put(SEG.hand[i], put(SEG.forearm[i], elbow, fore, side), fore, side);
       });
     }
-    // Assis dès que le dossier est en position canapé ou détente, allongé une fois le lit fait, absent entre les deux.
+    // Assis en position canapé, allongé une fois le lit fait, absent entre les deux.
     function poseBody() {
-      var seated = stageNow >= STAGE.sofa - 1e-6;
-      body.visible = state.body && !state.part && (seated || bedReady);
+      var seated = stageNow >= STAGE.sofa - 1e-6, lying = stageNow <= BED_READY;
+      body.visible = state.body && !state.part && (seated || lying);
       if (!body.visible) return;
       if (seated) sit(groups.back.rotation.x); else lie();
       dirty = true;
     }
 
     // --- positions ---
-    // Tout se déroule le long d'un seul axe « stage », gradué en secondes : lit (0) → canapé → détente.
-    // Passer d'une position à l'autre revient à parcourir cet axe, dans un sens ou dans l'autre.
-    // Entre canapé et détente, l'aller et le retour ne se ressemblent pas :
-    //   s'incliner  : on soulage le dossier, on couche le taquet, le dossier descend sur son flanc ;
-    //   se redresser : le taquet suit le montant qui remonte, se relève d'un coup, le dossier se repose dessus.
-
-    var STAGE = { bed: 0, sofa: 0.9, lounge: 3.5 };
-    var RECLINE = { lifted: 0.35, turned: 1.25 }, RAISE = { settled: 0.45, snapped: 0.95 };   // jalons, comptés depuis « canapé »
-    var A = model.angle, CAM = model.cam;
-    var BED_READY = 0.02;                                 // en deçà, le dossier est posé : les pieds du lit sont vissés
-    var bedReady = false;
+    // La bascule se déroule le long d'un seul axe « stage », gradué en secondes : lit (0) → canapé.
+    var STAGE = { bed: 0, sofa: 0.9 };
+    var A = model.angle;
+    var BED_READY = 0.02;                                 // en deçà, le lit est fait : le mannequin s'y couche
     var stageNow = STAGE.sofa, stageTarget = STAGE.sofa, stageFrom = STAGE.sofa, stageStart = 0, stageDuration = 0;
 
-    function clamp01(v) { return Math.max(0, Math.min(1, v)); }
-    function mix(a, b, k) { return a + (b - a) * k; }
     // Progression lissée de v entre deux jalons.
     function phase(v, from, to) {
-      var k = clamp01((v - from) / (to - from));
+      var k = Math.max(0, Math.min(1, (v - from) / (to - from)));
       return k * k * (3 - 2 * k);
-    }
-
-    // Angle du taquet rappelé par son manche, un coin en appui sous le montant.
-    function camFollowing(back) {
-      var table = CAM.follow, last = table.length - 1;
-      if (back <= table[0][0]) return table[0][1];
-      for (var i = 1; i <= last; i++) {
-        if (back <= table[i][0]) {
-          return mix(table[i - 1][1], table[i][1], (back - table[i - 1][0]) / (table[i][0] - table[i - 1][0]));
-        }
-      }
-      return table[last][1];
     }
 
     function applyStage(v) {
       stageNow = v;
-      var back, cam = CAM.engaged, s = v - STAGE.sofa, end = STAGE.lounge - STAGE.sofa;
-      var wasBed = bedReady;
-      bedReady = v <= BED_READY;
-      if (bedReady !== wasBed) paint();                   // les pieds du lit apparaissent ou disparaissent
-      if (s <= 0) {
-        back = mix(A.bed, A.sofa, phase(v, 0, STAGE.sofa));
-      } else if (stageTarget > stageFrom) {
-        back = mix(mix(A.sofa, A.lift, phase(s, 0, RECLINE.lifted)), A.lounge, phase(s, RECLINE.turned, end));
-        cam = mix(CAM.engaged, CAM.retracted, phase(s, RECLINE.lifted, RECLINE.turned));
-      } else {
-        back = mix(mix(A.sofa, A.lift, phase(s, 0, RAISE.settled)), A.lounge, phase(s, RAISE.snapped, end));
-        cam = mix(CAM.engaged, camFollowing(back), phase(s, RAISE.settled, RAISE.snapped));
-      }
-      groups.back.rotation.x = back;
-      groups.cam.rotation.x = cam;
+      groups.back.rotation.x = A.bed + (A.sofa - A.bed) * phase(v, STAGE.bed, STAGE.sofa);
       poseBody();
       dirty = true;
     }
@@ -815,7 +778,7 @@
     function paint() {
       meshes.forEach(function (m) {
         var part = m.userData.part, id = part.id, mat = m.material;
-        m.visible = (id === state.part || shown(part)) && (!part.bedOnly || bedReady);
+        m.visible = id === state.part || shown(part);
         var ghost = !!state.part && id !== state.part;
         if (mat.transparent !== ghost) {
           mat.transparent = ghost;
@@ -832,7 +795,7 @@
 
     // --- caméra ---
 
-    // Direction d'où l'on regarde. « mech » cadre le taquet du côté droit plutôt que le canapé entier.
+    // Direction d'où l'on regarde. « mech » cadre le pivot et la butée du côté droit plutôt que le canapé entier.
     var VIEWS = { iso: [0.62, 0.4, 0.78], front: [0, 0.16, 1], side: [1, 0.12, 0.001], top: [0, 1, 0.02], mech: [1, 0.1, 0.22] };
     var focusBox = new THREE.Box3(new THREE.Vector3().fromArray(model.focus.min), new THREE.Vector3().fromArray(model.focus.max));
     var UP = new THREE.Vector3(0, 1, 0);

@@ -50,7 +50,7 @@ add('# Liste des matériaux',
     '> - Prix relevés sur les sites des vendeurs ' + PRICES_READ + ' : à vérifier avant d\'acheter.');
 
 // ---------------------------------------------------------------- bois, panneaux, quincaillerie
-var wood = ['chevron', 'plank', 'mdf18', 'mdf10'], uses = {};
+var wood = ['chevron', 'plank', 'mdf18', 'mdf10', 'dowel'], uses = {};
 Bom.pieces(model).forEach(function (p) {
   (uses[p.stock] = uses[p.stock] || []).push(p.qty + ' × ' + p.part.toLowerCase() + (p.length ? ' de ' + num(p.length) + (p.width ? ' × ' + num(p.width) : '') + ' cm' : ''));
 });
@@ -81,11 +81,7 @@ plan.cutting.filter(function (c) { return wood.indexOf(c.key) >= 0; }).forEach(f
 
 add('## 2. Quincaillerie', '',
     table(['Article', 'Qté', 'Prix', 'Total', 'Sert à'], lines(isHardware)), '',
-    'Sous-total : **' + euro(subtotal(isHardware)) + '** (dont ' + euro(plan.estimated) + ' estimés).', '',
-    'À façonner dans la chute de hêtre et le tourillon :', '',
-    table(['Pièce', 'Qté', 'Dimensions', 'Matière'], ['cam', 'lever', 'pin'].map(function (id) {
-      var p = part(id); return [p.name, p.qty, size(p), p.material];
-    })));
+    'Sous-total : **' + euro(subtotal(isHardware)) + '** (dont ' + euro(plan.estimated) + ' estimés).');
 
 // ---------------------------------------------------------------- mousse et ouate
 var seatFoam = part('seatFoam'), backFoam = part('backFoam'), cover = model.cover;
@@ -123,8 +119,8 @@ add('', '## 3. Mousse', '',
     'Le site ne facture pas forcément au volume exact, et les frais de port ne sont pas comptés : saisir chaque plaque dans son configurateur avant de commander.',
     '- Ce prix est celui d\'une épaisseur standard. Le site annonce le standard 30 % moins cher : pour une épaisseur hors de sa liste, compter environ 43 % de plus.',
     foamLimits.concat([
-      '- La mousse d\'assise se colle sur le plateau en MDF. Elle reçoit une entaille à chaque bout pour coiffer les flancs, ' +
-      'et une saignée dessous pour le fourreau du tube : voir la pièce « Mousse d\'assise » dans la page.',
+      '- La mousse d\'assise se colle sur le plateau en MDF. Elle reçoit une entaille à chaque bout pour coiffer les flancs : ' +
+      'voir la pièce « Mousse d\'assise » dans la page.',
       '- Les deux plaques du dossier se collent de part et d\'autre du cadre.' + (sameBack ? '' : ' Celle de ' + num(M.back.foam[0]) + ' cm va du côté où l\'on s\'adosse, celle de ' + num(M.back.foam[1]) + ' cm du côté qui devient le couchage.')
     ]).join('\n'));
 
@@ -137,7 +133,7 @@ add('', '## 4. Ouate', '',
       ['**Total**', '**' + num(seatWad + backWad) + ' m²**', '', '', '', '', Bom.SOFT.wadding.price === null ? TODO : euro(Bom.SOFT.wadding.price)]
     ]), '',
     '- Surfaces nettes, sans marge de coupe.',
-    '- Pas de ouate sur les flancs de l\'assise : le tissu y est tendu à même le bois, pour laisser travailler le montant et le taquet.');
+    '- Pas de ouate sur les flancs de l\'assise : le tissu y est tendu à même le bois, pour laisser travailler le montant.');
 
 // ---------------------------------------------------------------- tissu
 var first = Bom.fabricNeed(model, Fabrics.list[0]);
@@ -156,8 +152,8 @@ add('', '## 5. Tissu', '',
     Fabrics.list.map(function (f) { return '- **' + f.name + '** — ' + f.note + (f.url ? ' [Fiche du vendeur](' + f.url + ')' : ''); }).join('\n'));
 
 // ---------------------------------------------------------------- hors liste, total
-add('', '## 6. Réalisé à part', '', 'Les montants et les pieds amovibles du lit sont fabriqués par un ami : ils ne sont pas dans les achats.', '',
-    table(['Pièce', 'Qté', 'Dimensions hors tout', 'Matière'], ['upright', 'bedLeg'].map(function (id) {
+add('', '## 6. Réalisé à part', '', 'Les montants sont fabriqués par un ami : ils ne sont pas dans les achats.', '',
+    table(['Pièce', 'Qté', 'Dimensions hors tout', 'Matière'], ['upright'].map(function (id) {
       var p = part(id); return [p.name, p.qty, size(p), p.material];
     })));
 
